@@ -27,11 +27,11 @@ async function main() {
   const ammm = await web3.utils.toWei("2", "milli");
   const ico = await ICO.deploy(
     token.address,
-    592200,
+    5,
     ammm,
     totalSupply, //_availableTokens for the ICO. can be less than maxTotalSupply
-    200, //_minPurchase (in DAI)
-    5000
+    20, //_minPurchase (in DAI)
+    50000
   );
 
   await token.deployed();
