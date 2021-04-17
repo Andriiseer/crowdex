@@ -7,11 +7,22 @@ require("@nomiclabs/hardhat-web3");
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async () => {
   const accounts = await ethers.getSigners();
-
   for (const account of accounts) {
     console.log(account.address);
+    const balance = await web3.eth.getBalance(account.address);
+    console.log(balance);
   }
 });
+task("balance", "Prints an account's balance")
+  .addParam("account", "The account's address")
+  .setAction(async taskArgs => {
+    const account = web3.utils.toChecksumAddress(taskArgs.account);
+    const balance = await web3.eth.getBalance(account);
+
+    console.log(web3.utils.fromWei(balance, "ether"), "ETH");
+    console.log(balance);
+  });
+
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
