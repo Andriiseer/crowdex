@@ -24,6 +24,17 @@ async function main() {
     "gPRX",
     totalSupply
   );
+
+  // Create a fake dai token to "faucet" the account
+  const fakeDai = await Token.deploy(
+    "Not dai but close",
+    "DAI",
+    totalSupply
+  );
+
+  await fakeDai.deployed()
+  await fakeDai.mint(owner.address, 1000)
+
   const ammm = await web3.utils.toWei("2", "milli");
   const ico = await ICO.deploy(
     token.address,
@@ -31,7 +42,8 @@ async function main() {
     ammm,
     totalSupply, //_availableTokens for the ICO. can be less than maxTotalSupply
     20, //_minPurchase (in DAI)
-    50000
+    50000,
+    fakeDai.address //TODO Replace with real DAI on mainnet
   );
 
   await token.deployed();
