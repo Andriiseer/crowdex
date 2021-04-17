@@ -15,11 +15,11 @@ const web3 = require("web3");
 //   });
 // });
 
-describe("ICO", () => {
-  it("should deploy", async () => {
+describe("Deploy gov token and assert owner's balance", () => {
+  it("should deploy and show balance", async () => {
     const totalSupply = 100000;
+    const [owner] = await ethers.getSigners();
     const Token = await ethers.getContractFactory("Token");
-    const ICO = await ethers.getContractFactory("ICO");
 
     const token = await Token.deploy(
       "Governance Test token",
@@ -27,20 +27,31 @@ describe("ICO", () => {
       totalSupply
     );
     await token.deployed();
-    // console.log(token.logs);
+    await token.mint(owner.address, 1000)
 
-    const ammm = await web3.utils.toWei("2", "milli");
-    const ico = await ICO.deploy(
-      token.address,
-      5,
-      ammm,
-      totalSupply, //_availableTokens for the ICO. can be less than maxTotalSupply
-      20, //_minPurchase (in DAI)
-      50000
+    let bal = await token.balanceOf(owner.address)
+    expect(bal).to.eq(1000)
+    expect(await token.totalSupply()).to.equal(bal);
+  });
+
+  it("should deploy", async () => {
+    const totalSupply = 100000;
+    const [owner, addr1] = await ethers.getSigners();
+    const Token = await ethers.getContractFactory("Token");
+
+    const token = await Token.deploy(
+      "Governance Test token",
+      "gTST",
+      totalSupply
     );
 
-    await ico.deployed();
+    await token.deployed();
+    await token.mint(owner.address, 1000) // 1e-15
 
-    console.log(ico);
+    const bal = await token.totalSupply()
+
+    await token.transfer(addr1.address, 50);
+    expect(await token.balanceOf(addr1.address)).to.equal(50);
+
   });
 });
