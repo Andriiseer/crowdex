@@ -20,7 +20,7 @@ contract ICO {
     uint256 public minPurchase;
     uint256 public maxPurchase;
     Token public token;
-    IERC20 public dai = IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
+    IERC20 public dai;
 
     constructor(
         address tokenAddress,
@@ -28,9 +28,11 @@ contract ICO {
         uint256 _price,
         uint256 _availableTokens,
         uint256 _minPurchase,
-        uint256 _maxPurchase
+        uint256 _maxPurchase,
+        address daiAddress
     ) {
         token = Token(tokenAddress);
+        dai = ERC20(daiAddress);
 
         require(_duration > 0, "duration should be > 0");
         require(
