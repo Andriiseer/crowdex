@@ -1,8 +1,7 @@
 const { expect } = require("chai");
 const hre = require("hardhat");
 const web3 = require("web3");
-const { deployMockContract } = require('@ethereum-waffle/mock-contract');
-const abi = require('./IERC20.abi');
+
 
 describe("Deploy gov token and assert owner's balance", () => {
   it("should deploy and show balance", async () => {
@@ -91,8 +90,9 @@ describe("Deploy gov token and assert owner's balance", () => {
 
     // Make sure the dai has been withdrawn
     expect(await fakeDai.balanceOf(addr1.address)).to.eq(980);
-
+    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
     // THIS FAILS...
+    await wait(6000)
     console.log('TOKEN Balance: ',(await token.balanceOf(addr1.address)).toNumber());
   });
 });
