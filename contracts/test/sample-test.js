@@ -1,6 +1,8 @@
 const { expect } = require("chai");
 const hre = require("hardhat");
 const web3 = require("web3");
+const { deployMockContract } = require('@ethereum-waffle/mock-contract');
+const abi = require('./IERC20.abi');
 
 describe("Deploy gov token and assert owner's balance", () => {
   it("should deploy and show balance", async () => {
@@ -52,7 +54,6 @@ describe("Deploy gov token and assert owner's balance", () => {
     );
 
     await token.deployed();
-    await token.mint(owner.address, 1000) // 1e-15
 
     const fakeDai = await Token.deploy(
       "Not dai but close",
@@ -61,7 +62,8 @@ describe("Deploy gov token and assert owner's balance", () => {
     );
 
     await fakeDai.deployed()
-    await fakeDai.mint(owner.address, 1000)
+    await fakeDai.mint(addr1.address, 1000)
+    expect(await fakeDai.balanceOf(addr1.address)).to.equal(1000);
 
     const ammm = await web3.utils.toWei("2", "milli");
     const ico = await ICO.deploy(
@@ -78,12 +80,19 @@ describe("Deploy gov token and assert owner's balance", () => {
     await ico.deployed();
     await token.updateAdmin(ico.address);
     await ico.start();
-    // console.log(ico.address)
 
-    await fakeDai.increaseAllowance(owner.address, 20)
-    console.log((await fakeDai.allowance(ico.address, owner.address)).toNumber())
-    
-    console.log(await ico.connect(owner).buy(2)) 
+    // Approve buy order of 20 dai
+    await fakeDai.connect(addr1).approve(ico.address, 20)
+    expect(await fakeDai.allowance(addr1.address, ico.address)).to.eq(20)
+    // Make sure the balance is correct
+    expect(await fakeDai.balanceOf(addr1.address)).to.eq(1000);
+    // Perform transaction
+    await ico.connect(addr1).buy(20) 
 
+    // Make sure the dai has been withdrawn
+    expect(await fakeDai.balanceOf(addr1.address)).to.eq(980);
+
+    // THIS FAILS...
+    console.log('TOKEN Balance: ',(await token.balanceOf(addr1.address)).toNumber());
   });
 });
