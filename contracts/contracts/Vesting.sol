@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 import "./Token.sol";
 import "./lib/math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "hardhat/console.sol";
 
 contract Vesting is DSMath {
   Token public token;
@@ -68,8 +69,8 @@ contract Vesting is DSMath {
     require(_vestingCliff > 0, "token-zero-vesting-cliff");
     require(_vestingInterval > 0, "vesting-interval-less-than-zero");
     require(_vestingDuration > _vestingCliff, "token-cliff-longer-than-duration");
-    uint amountVestedPerDay = _amount / _vestingDuration;
-    require(amountVestedPerDay > 0, "token-zero-amount-vested-per-month");
+    uint amountVestedPerInterval = _amount / _vestingDuration;
+    require(amountVestedPerInterval > 0, "token-zero-amount-vested-per-interval");
 
     // Transfer the grant tokens under the control of the vesting contract
     token.transferFrom(admin, address(this), _amount);
@@ -96,9 +97,9 @@ contract Vesting is DSMath {
   onlyAdmin()
   {
     Grant storage tokenGrant = tokenGrants[_recipient];
-    uint128 daysVested;
+    uint128 intervlsVested;
     uint128 amountVested;
-    (daysVested, amountVested) = calculateGrantClaim(_recipient);
+    (intervlsVested, amountVested) = calculateGrantClaim(_recipient);
     uint128 amountNotVested = uint128(sub(sub(tokenGrant.amount, tokenGrant.totalClaimed), amountVested));
 
     require(token.transfer(_recipient, amountVested), "token-recipient-transfer-failed");
@@ -122,7 +123,7 @@ contract Vesting is DSMath {
     (intervalsVested, amountVested) = calculateGrantClaim(msg.sender);
     require(amountVested > 0, "token-zero-amount-vested");
 
-    Grant memory tokenGrant = tokenGrants[msg.sender];
+    Grant storage tokenGrant = tokenGrants[msg.sender];
     tokenGrant.intervalsClaimed = uint128(add(tokenGrant.intervalsClaimed, intervalsVested));
     tokenGrant.totalClaimed = uint128(add(tokenGrant.totalClaimed, amountVested));
     
