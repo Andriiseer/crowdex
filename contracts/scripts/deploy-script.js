@@ -18,6 +18,9 @@ async function main() {
   const ONE_MIL = await web3.utils.toWei("1000000");
   const ONE_THOU = await web3.utils.toWei("1000");
 
+  const MIN_PURCHASE = await web3.utils.toWei("20");
+  const MAX_PURCHASE = await web3.utils.toWei("50000");
+  const PRICE = await web3.utils.toWei("20");
   const totalSupply = ONE_MIL;
   const Token = await hre.ethers.getContractFactory("Token");
   const ICO = await hre.ethers.getContractFactory("ICO");
@@ -49,11 +52,11 @@ async function main() {
 
   const ico = await ICO.deploy(
     token.address,
-    300,
-    20,
+    600,
+    PRICE,
     totalSupply, //_availableTokens for the ICO. can be less than maxTotalSupply
-    20, //_minPurchase (in DAI)
-    50000,
+    MIN_PURCHASE, //_minPurchase (in DAI)
+    MAX_PURCHASE,
     fakeDai.address //TODO Replace with real DAI on mainnet
   );
 
@@ -66,10 +69,10 @@ async function main() {
   console.log("Token address: ", token.address);
   console.log("FakeDAI address: ", fakeDai.address);
 
-  await fakeDai.connect(addr1).approve(ico.address, ONE_THOU);
-  await fakeDai.connect(addr2).approve(ico.address, ONE_THOU);
-  await fakeDai.connect(addr3).approve(ico.address, ONE_THOU);
-  await fakeDai.connect(addr4).approve(ico.address, ONE_THOU);
+  // await fakeDai.connect(addr1).approve(ico.address, ONE_THOU);
+  // await fakeDai.connect(addr2).approve(ico.address, ONE_THOU);
+  // await fakeDai.connect(addr3).approve(ico.address, ONE_THOU);
+  // await fakeDai.connect(addr4).approve(ico.address, ONE_THOU);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

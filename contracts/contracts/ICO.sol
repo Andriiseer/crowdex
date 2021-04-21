@@ -32,7 +32,7 @@ contract ICO {
         address daiAddress
     ) {
         token = Token(tokenAddress);
-        dai = IERC20(daiAddress);
+        dai = Token(daiAddress);
 
         require(_duration > 0, "duration should be > 0");
         require(
