@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import Header from '../components/header'
+import Banner from '../components/banner'
 import { requestAccount, fetchGreeting } from '../utils/crowdex-utils'
 
 export default function Home() {
@@ -23,6 +24,7 @@ export default function Home() {
   return (
     <>
       <Header />
+      <Banner />
       <div className={'max-w-7xl mx-auto px-2 sm:px-6 lg:px-8'}>
         <button
           class="bg-gray-800 m-2 p-4 rounded-full text-white"
