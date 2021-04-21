@@ -26,7 +26,7 @@ export default function Banner () {
                 <span class="block text-indigo-600 xl:inline"> favorite NFT artists</span>
               </h1>
               <p class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo. Elit sunt amet fugiat veniam occaecat fugiat aliqua.
+                Fund the development of the next best selling NFTs and be one of the few decision makers who get to vote on the artists proposals.
               </p>
             </div>
           </main>
