@@ -1,10 +1,10 @@
 import Head from "next/head";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Header from '../components/header'
 import Banner from '../components/banner'
 import CardList from '../components/cardList'
 import Modal from '../components/modal'
-import { requestAccount, fetchGreeting } from '../utils/crowdex-utils'
+import { fetchGreeting } from '../utils/crowdex-utils'
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false)
@@ -14,10 +14,6 @@ export default function Home() {
     icoPrice: '', 
     cDAIBalance: ''
   })
-
-  useEffect(() => {
-    requestAccount()
-  }, [])
 
   const getGreetingData = async() => {
     const data = await fetchGreeting()
