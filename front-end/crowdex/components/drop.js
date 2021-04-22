@@ -1,5 +1,6 @@
-import React from "react";
 import { useDropzone } from "react-dropzone";
+import { useEffect } from 'react'
+import axios from 'axios'
 // const pinataSDK = require("@pinata/sdk");
 // const pinata = pinataSDK(
 //   "1c3c042ea81d24ee34de",
@@ -8,11 +9,30 @@ import { useDropzone } from "react-dropzone";
 export default function Drop(props) {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
 
-  const files = acceptedFiles.map((file) => (
-    <li key={file.path}>
-      {file.stream} - {file.size} bytes
+  useEffect(() => {
+    if (!acceptedFiles.length) return
+    const formData = new FormData()
+  
+    acceptedFiles.forEach(file => {
+      formData.append(file.name, file)
+    })
+
+    console.log(formData)
+    
+    axios.post('/api/upload-file-to-ipfs', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  }, [acceptedFiles])
+
+  const files = acceptedFiles.map((file) => {
+    console.log(file)
+    return (<li key={file.path}>
+      {file.path} - {file.size} bytes
     </li>
-  ));
+    )
+  });
 
   return (
     <section className="m-16">
@@ -34,4 +54,3 @@ export default function Drop(props) {
   );
 }
 
-<Drop />;

@@ -36,7 +36,7 @@ export default function Home() {
         <div>cDAI Balance: {greetingData.cDAIBalance}</div>
         <div>Data: {greetingData.data}</div>
       </div>
-      <Drop></Drop>
+      <Drop />
     </>
   );
 }
