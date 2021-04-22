@@ -1,9 +1,8 @@
 import { ethers } from "ethers";
-import Token from "../artifacts/contracts/Token.sol/Token.json";
-import ICO from "../artifacts/contracts/ICO.sol/ICO.json";
+import Token from "../contracts/Token.sol/Token.json";
+import ICO from "../contracts/ICO.sol/ICO.json";
 
 module.exports = {
-
   requestAccount: () => {
     window.ethereum.request({ method: "eth_requestAccounts" });
   },
@@ -39,13 +38,13 @@ module.exports = {
         const data = await fake_dai.totalSupply();
         console.log("data: ", data.toString());
         return {
-          data: JSON.stringify(data), 
-          icoPrice: JSON.stringify(icoPrice), 
-          cDAIBalance: JSON.stringify(cDAIBalance)
-        }
+          data: JSON.stringify(data),
+          icoPrice: JSON.stringify(icoPrice),
+          cDAIBalance: JSON.stringify(cDAIBalance),
+        };
       } catch (err) {
         console.log("Error: ", err);
       }
     }
-  }
-}
+  },
+};
