@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Balances from './balances'
 import { requestAccount } from '../utils/crowdex-utils'
 
 export default function UserAccount () {
   const [showBalances, setshowBalances] = useState(false)
   const [account, setAccount] = useState('Connect Wallet')
+  const balances = useRef(null);
 
   const getAccount = async () => {
     let account = await requestAccount()
@@ -13,7 +14,19 @@ export default function UserAccount () {
 
   useEffect(() => {
     getAccount()
-  }, [])
+
+    if (!showBalances) return;
+    function handleClick(event) {
+      if (balances.current && !balances.current.contains(event.target)) {
+        setshowBalances(false);
+      }
+    }
+    window.addEventListener("click", handleClick);
+   
+    return () => window.removeEventListener("click", handleClick);
+  }, [showBalances])
+
+
 
   return (
     <div class="ml-3 relative">
@@ -27,10 +40,14 @@ export default function UserAccount () {
           aria-haspopup="true"
         >
           <span class="sr-only">Open user menu</span>
-          <p className='text-white w-24 truncate px-4 py-2'>{account}</p>
+          <p className='text-white text-xs w-16 truncate px-2 py-2'>{account}</p>
         </button>
       </div>
-      {showBalances && <Balances />}
+      {showBalances && 
+        <div ref={balances} >
+          <Balances />
+        </div>
+      }
     </div>
   )
 }

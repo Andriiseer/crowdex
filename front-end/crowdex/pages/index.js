@@ -5,8 +5,10 @@ import Banner from '../components/banner'
 import CardList from '../components/cardList'
 import Modal from '../components/modal'
 import { fetchGreeting } from '../utils/crowdex-utils'
+import dbConnect from '../utils/dbConnect'
+import Listing from '../models/Listing'
 
-export default function Home() {
+export default function Home(props) {
   const [showModal, setShowModal] = useState(false)
   const [modalData, setModalData] = useState({})
   const [greetingData, setGreetingData] = useState({
@@ -31,8 +33,8 @@ export default function Home() {
       <Header />
       <Banner />
       {showModal && <Modal data={modalData} closeModal={() => setShowModal(false)}/>}
-      <CardList title={'Trending Projects'} showSelectedProject={showSelectedProject} />
-      <CardList title={'Past Projects'} showSelectedProject={showSelectedProject} />
+      <CardList title={'Trending Projects'} cardData={props.cardData} showSelectedProject={showSelectedProject} />
+      <CardList title={'Past Projects'} cardData={props.cardData} showSelectedProject={showSelectedProject} />
 
       <div className={'max-w-7xl mx-auto px-2 sm:px-6 lg:px-8'}>
         <button
@@ -53,4 +55,22 @@ export default function Home() {
       </div>
     </>
   );
+}
+
+export async function getServerSideProps(context) {
+  await dbConnect()
+
+  const listings = (await Listing.find({ status: 'active' })).map(listing => 
+    {
+      let l = listing.toObject()
+      delete l['_id']
+      return l
+    }
+  )
+  
+  console.log(listings)
+
+  return {
+    props: { cardData: listings }, // will be passed to the page component as props
+  }
 }

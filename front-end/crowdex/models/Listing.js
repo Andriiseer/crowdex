@@ -2,6 +2,13 @@ import mongoose from "mongoose";
 
 const ListingSchema = new mongoose.Schema(
   { 
+    name: String,
+    authorName: String,
+    filled: Number,
+    goal: Number,
+    funded: Number,
+    end: String,
+    currency: String,
     eth_address: String, // ETH address
     duration: Number,// Duration in weeks
     constacts: String, // Contacts
