@@ -1,7 +1,7 @@
 const { expect } = require("chai");
+const { ethers } = require("hardhat");
 const hre = require("hardhat");
 const web3 = require("web3");
-
 
 describe("Deploy ICO and tokens", () => {
   it("should sell and withdraw", async () => {
@@ -29,15 +29,18 @@ describe("Deploy ICO and tokens", () => {
     expect(await fakeDai.balanceOf(addr1.address)).to.equal(1000);
 
     const ico = await ICO.deploy(
-      token.address,
-      5,
-      5,
+      token.address, // GOV token address
+      4, // Duration (seconds)
+      5, // Price
       totalSupply, //_availableTokens for the ICO. can be less than maxTotalSupply
       20, //_minPurchase (in DAI)
-      50000,
-      fakeDai.address
+      50000, //_maxPurchase (in DAI)
+      fakeDai.address, // Payment token address
+      owner.address, // Author address
+      1 // Vesting interval
     );
 
+    // Deploy everything & start ico
     await token.deployed();
     await ico.deployed();
     await token.updateAdmin(ico.address);
@@ -56,9 +59,15 @@ describe("Deploy ICO and tokens", () => {
     const sale = await ico.sales(addr1.address)
     const amount = sale[1].toNumber()
     expect(amount).to.eq(40)
-    await wait(6000)
+    
+    await wait(2000)
     await ico.connect(addr1).withdrawTokens()
     // check token balance post withdrawal
     expect(await token.balanceOf(addr1.address)).to.eq(40);
+    
+    await ico.withdrawDai(10)
+
+    console.log(await ico.calculateGrantClaim(owner.address))
+
   });
 });
