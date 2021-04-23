@@ -38,7 +38,7 @@ contract ICO is DSMath {
         uint256 totalClaimed;
     }
 
-    mapping(address => Grant) public tokenGrants;
+    mapping(address => Grant) public busdGrants;
 
     address public admin;
     uint256 public end;
@@ -52,7 +52,7 @@ contract ICO is DSMath {
     uint256 public vestingInterval;
 
     Token public token;
-    Token public dai;
+    Token public busd;
     NFT private nft;
 
     constructor(
@@ -62,12 +62,12 @@ contract ICO is DSMath {
         uint256 _availableTokens,
         uint256 _minPurchase,
         uint256 _maxPurchase,
-        address daiAddress,
+        address busdAddress,
         address _authorAddress,
         uint256 _vestingInterval
     ) {
         token = Token(tokenAddress);
-        dai = Token(daiAddress);
+        busd = Token(busdAddress);
         nftAddress = address(0);
 
         require(_duration > 0, "duration should be > 0");
@@ -95,17 +95,17 @@ contract ICO is DSMath {
         end = block.timestamp + duration;
     }
 
-    function buy(uint256 daiAmount) external icoActive() {
+    function buy(uint256 busdAmount) external icoActive() {
         require(
-            daiAmount >= minPurchase && daiAmount <= maxPurchase,
+            busdAmount >= minPurchase && busdAmount <= maxPurchase,
             "have to buy between minPurchase and maxPurchase"
         );
-        uint256 tokenAmount = daiAmount.div(price);
+        uint256 tokenAmount = busdAmount.div(price);
         require(
             tokenAmount <= availableTokens,
             "Not enough tokens left for sale"
         );
-        dai.transferFrom(msg.sender, address(this), daiAmount);
+        busd.transferFrom(msg.sender, address(this), busdAmount);
         token.mint(address(this), tokenAmount);
 
         Sale storage sale = sales[msg.sender];
@@ -125,17 +125,16 @@ contract ICO is DSMath {
         token.transfer(sale.investor, sale.amount);
     }
 
-    function withdrawDai(uint16 vestingDuration)
+    function initiateBusdVesting(uint16 vestingDuration)
         external
         onlyAdmin()
         icoEnded()
     {
-        uint256 amount = dai.balanceOf(address(this));
-        // dai.transfer(vestingAddress, amount);
-        addTokenGrant(authorAddress, block.timestamp, amount, vestingDuration);
+        uint256 amount = busd.balanceOf(address(this));
+        addBusdGrant(authorAddress, block.timestamp, amount, vestingDuration);
     }
 
-    function addTokenGrant(
+    function addBusdGrant(
         address _recipient,
         uint256 _startTime,
         uint256 _amount,
@@ -159,65 +158,61 @@ contract ICO is DSMath {
                 totalClaimed: 0
             });
         console.log("created grant", grant.amount, vestingInterval);
-        tokenGrants[_recipient] = grant;
-        Grant storage tokenGrant = tokenGrants[_recipient];
+        busdGrants[_recipient] = grant;
+        Grant storage busdGrant = busdGrants[_recipient];
 
-        console.log("retrieved grant", tokenGrant.amount);
+        console.log("retrieved grant", busdGrant.amount);
 
         emit GrantAdded(_recipient, grant.startTime, _amount, _vestingDuration);
     }
 
-    function removeTokenGrant(address _recipient) external onlyAdmin() {
-        Grant storage tokenGrant = tokenGrants[_recipient];
+    function removeBusdGrant(address _recipient) external onlyAdmin() {
+        Grant storage busdGrant = busdGrants[_recipient];
         uint16 intervalsVested;
         uint256 amountVested;
         (intervalsVested, amountVested) = calculateGrantClaim(_recipient);
         uint256 amountNotVested =
             uint256(
                 sub(
-                    sub(tokenGrant.amount, tokenGrant.totalClaimed),
+                    sub(busdGrant.amount, busdGrant.totalClaimed),
                     amountVested
                 )
             );
 
         require(
-            token.transfer(_recipient, amountVested),
+            busd.transfer(_recipient, amountVested),
             "token-recipient-transfer-failed"
         );
         require(
-            token.transfer(admin, amountNotVested),
+            busd.transfer(admin, amountNotVested),
             "token-multisig-transfer-failed"
         );
 
-        tokenGrant.startTime = 0;
-        tokenGrant.amount = 0;
-        tokenGrant.vestingDuration = 0;
-        tokenGrant.intervalsClaimed = 0;
-        tokenGrant.totalClaimed = 0;
+        busdGrant.startTime = 0;
+        busdGrant.amount = 0;
+        busdGrant.vestingDuration = 0;
+        busdGrant.intervalsClaimed = 0;
+        busdGrant.totalClaimed = 0;
 
         emit GrantRemoved(_recipient, amountVested, amountNotVested);
     }
 
-    function claimVestedTokens() public {
+    function claimVestedBusd() public {
         uint16 intervalsVested;
         uint256 amountVested;
         (intervalsVested, amountVested) = calculateGrantClaim(msg.sender);
         require(amountVested > 0, "token-zero-amount-vested");
 
-        Grant storage tokenGrant = tokenGrants[msg.sender];
-        tokenGrant.intervalsClaimed = uint16(
-            add(tokenGrant.intervalsClaimed, intervalsVested)
+        Grant storage busdGrant = busdGrants[msg.sender];
+        busdGrant.intervalsClaimed = uint16(
+            add(busdGrant.intervalsClaimed, intervalsVested)
         );
-        tokenGrant.totalClaimed = uint256(
-            add(tokenGrant.totalClaimed, amountVested)
+        busdGrant.totalClaimed = uint256(
+            add(busdGrant.totalClaimed, amountVested)
         );
 
-        // require(
-        //     token.transfer(msg.sender, amountVested),
-        //     "token-sender-transfer-failed"
-        // );
         console.log(amountVested);
-        dai.transfer(msg.sender, amountVested);
+        busd.transfer(msg.sender, amountVested);
         emit GrantTokensClaimed(msg.sender, amountVested);
     }
 
@@ -228,25 +223,28 @@ contract ICO is DSMath {
         view
         returns (uint16, uint256)
     {
-        Grant storage tokenGrant = tokenGrants[_recipient];
+        Grant storage busdGrant = busdGrants[_recipient];
         // For grants created with a future start date, that hasn't been reached, return 0, 0
-        if (block.timestamp < tokenGrant.startTime) {
+        if (block.timestamp < busdGrant.startTime) {
             return (0, 0);
         }
 
-        uint256 elapsedTime = sub(block.timestamp, tokenGrant.startTime);
+        uint256 elapsedTime = sub(block.timestamp, busdGrant.startTime);
         uint256 elapsedIntervals = elapsedTime / vestingInterval;
-        console.log(elapsedIntervals, block.timestamp, tokenGrant.startTime);
+        console.log(elapsedIntervals, block.timestamp, busdGrant.startTime);
         // If over vesting duration, all tokens vested
-        if (elapsedIntervals >= tokenGrant.vestingDuration) {
+        if (elapsedIntervals >= busdGrant.vestingDuration) {
             uint256 remainingGrant =
-                tokenGrant.amount - tokenGrant.totalClaimed;
-            return (tokenGrant.vestingDuration, remainingGrant);
+                busdGrant.amount - busdGrant.totalClaimed;
+            return (busdGrant.vestingDuration, remainingGrant);
         } else {
+            // subtract elapsed from claimed to have current vested
             uint16 intervalsVested =
-                uint16(sub(elapsedIntervals, tokenGrant.intervalsClaimed));
+                uint16(sub(elapsedIntervals, busdGrant.intervalsClaimed));
+            // Amount vested per interval
             uint256 amountVestedPerInterval =
-                tokenGrant.amount / tokenGrant.vestingDuration;
+                busdGrant.amount / busdGrant.vestingDuration;
+            // Multiply amount per interval by current available intervals
             uint256 amountVested =
                 uint256(mul(intervalsVested, amountVestedPerInterval));
             return (intervalsVested, amountVested);
@@ -277,7 +275,7 @@ contract ICO is DSMath {
     }
 
     modifier noGrantExistsForUser(address _user) {
-        require(tokenGrants[_user].startTime == 0, "token-user-grant-exists");
+        require(busdGrants[_user].startTime == 0, "token-user-grant-exists");
         _;
     }
 

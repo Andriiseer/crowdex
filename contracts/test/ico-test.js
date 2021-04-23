@@ -65,7 +65,7 @@ describe("Deploy ICO and tokens", () => {
     // check token balance post withdrawal
     expect(await token.balanceOf(addr1.address)).to.eq(40);
     
-    await ico.withdrawDai(10)
+    await ico.initiateBusdVesting(10)
 
     console.log(await ico.calculateGrantClaim(owner.address))
 
