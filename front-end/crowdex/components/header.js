@@ -79,7 +79,7 @@ export default function Header () {
               <div class="hidden sm:block sm:ml-6">
                 <div class="flex space-x-4">
                   {/* <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" --> */}
-                  <a href="#" class="bg-indigo-400 text-white my-1 px-3 py-2 rounded-md text-sm font-medium" aria-current="page">New Project</a>
+                  <a href="/new-project-form" class="bg-indigo-400 text-white my-1 px-3 py-2 rounded-md text-sm font-medium" aria-current="page">New Project</a>
                 </div>
               </div>
             </div>
@@ -94,7 +94,7 @@ export default function Header () {
           showMobileMenu && <div class="sm:hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1">
               {/* <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" --> */}
-              <a href="#" class="text-gray-300 bg-indigo-400 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">New Project</a>
+              <a href="/new-project-form" class="text-gray-300 bg-indigo-400 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">New Project</a>
             </div>
           </div>
         }
