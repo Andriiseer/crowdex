@@ -4,12 +4,12 @@ import { requestAccount } from '../utils/crowdex-utils'
 
 export default function UserAccount () {
   const [showBalances, setshowBalances] = useState(false)
-  const [account, setAccount] = useState('Connect Wallet')
+  const [account, setAccount] = useState('Wallet')
   const balances = useRef(null);
 
   const getAccount = async () => {
     let account = await requestAccount()
-    setAccount(account[0])
+    account?.[0] && setAccount(account?.[0])
   }
 
   useEffect(() => {

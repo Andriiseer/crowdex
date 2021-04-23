@@ -4,7 +4,7 @@ import ICO from "../contracts/ICO.sol/ICO.json";
 
 module.exports = {
   requestAccount: () => {
-    return window.ethereum.request({ method: "eth_requestAccounts" });
+    return window?.ethereum?.request({ method: "eth_requestAccounts" });
   },
 
   fetchGreeting: async () => {
