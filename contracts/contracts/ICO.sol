@@ -107,7 +107,14 @@ contract ICO is DSMath {
         );
         dai.transferFrom(msg.sender, address(this), daiAmount);
         token.mint(address(this), tokenAmount);
-        sales[msg.sender] = Sale(msg.sender, tokenAmount, false);
+
+        Sale storage sale = sales[msg.sender];
+
+        if (sale.amount == 0) {
+            sales[msg.sender] = Sale(msg.sender, tokenAmount, false);
+        } else {
+            sale.amount = sale.amount + tokenAmount;
+        }
     }
 
     function withdrawTokens() external icoEnded() {
@@ -118,17 +125,14 @@ contract ICO is DSMath {
         token.transfer(sale.investor, sale.amount);
     }
 
-    function withdrawDai(
-        uint16 vestingDuration
-    ) external onlyAdmin() icoEnded() {
+    function withdrawDai(uint16 vestingDuration)
+        external
+        onlyAdmin()
+        icoEnded()
+    {
         uint256 amount = dai.balanceOf(address(this));
         // dai.transfer(vestingAddress, amount);
-        addTokenGrant(
-            authorAddress,
-            block.timestamp,
-            amount,
-            vestingDuration
-        );
+        addTokenGrant(authorAddress, block.timestamp, amount, vestingDuration);
     }
 
     function addTokenGrant(
@@ -142,7 +146,7 @@ contract ICO is DSMath {
             amountVestedPerInterval > 0,
             "token-zero-amount-vested-per-interval"
         );
-        console.log('amount: ', _amount, vestingInterval);
+        console.log("amount: ", _amount, vestingInterval);
         // Transfer the grant tokens under the control of the vesting contract
         // token.transferFrom(admin, address(this), _amount);
 
@@ -154,18 +158,13 @@ contract ICO is DSMath {
                 intervalsClaimed: 0,
                 totalClaimed: 0
             });
-        console.log('created grant', grant.amount, vestingInterval);
+        console.log("created grant", grant.amount, vestingInterval);
         tokenGrants[_recipient] = grant;
         Grant storage tokenGrant = tokenGrants[_recipient];
 
-        console.log('retrieved grant', tokenGrant.amount);
+        console.log("retrieved grant", tokenGrant.amount);
 
-        emit GrantAdded(
-            _recipient,
-            grant.startTime,
-            _amount,
-            _vestingDuration
-        );
+        emit GrantAdded(_recipient, grant.startTime, _amount, _vestingDuration);
     }
 
     function removeTokenGrant(address _recipient) external onlyAdmin() {
@@ -213,10 +212,12 @@ contract ICO is DSMath {
             add(tokenGrant.totalClaimed, amountVested)
         );
 
-        require(
-            token.transfer(msg.sender, amountVested),
-            "token-sender-transfer-failed"
-        );
+        // require(
+        //     token.transfer(msg.sender, amountVested),
+        //     "token-sender-transfer-failed"
+        // );
+        console.log(amountVested);
+        dai.transfer(msg.sender, amountVested);
         emit GrantTokensClaimed(msg.sender, amountVested);
     }
 

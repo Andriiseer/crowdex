@@ -20,7 +20,7 @@ async function main() {
 
   const MIN_PURCHASE = await web3.utils.toWei("20");
   const MAX_PURCHASE = await web3.utils.toWei("50000");
-  const PRICE = await web3.utils.toWei("20");
+  const PRICE = 20;
   const totalSupply = ONE_MIL;
   const Token = await hre.ethers.getContractFactory("Token");
   const ICO = await hre.ethers.getContractFactory("ICO");
@@ -30,6 +30,8 @@ async function main() {
     "gPRX",
     totalSupply
   );
+
+  await token.deployed();
   const addr1 = "0x390f70Bd71263C9bF057585E03839252f42dF59C";
   const addr2 = "0xb5df2CA49dDBc584747428777030AbC7c00b4408";
   const addr3 = "0x2e82073456fd22B5e94135339c566b7C73a80c79";
@@ -51,16 +53,17 @@ async function main() {
   // console.log("Addr1 balance: ", (await fakeDai.balanceOf(addr4)).toNumber());
 
   const ico = await ICO.deploy(
-    token.address,
-    600,
-    PRICE,
+    token.address, // GOV token address
+    120, // Duration (seconds)
+    PRICE, // Price
     totalSupply, //_availableTokens for the ICO. can be less than maxTotalSupply
     MIN_PURCHASE, //_minPurchase (in DAI)
-    MAX_PURCHASE,
-    fakeDai.address //TODO Replace with real DAI on mainnet
+    MAX_PURCHASE, //_maxPurchase (in DAI)
+    fakeDai.address, // Payment token address
+    owner, // Author address
+    30 // Vesting interval
   );
 
-  await token.deployed();
   await ico.deployed();
   await token.updateAdmin(ico.address);
   await ico.start();
