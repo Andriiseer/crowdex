@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import Router from 'next/router';
+import dbConnect from '../../utils/dbConnect'
+import CardList from '../../components/cardList'
+import Modal from '../../components/adminModal'
+import Listing from '../../models/Listing'
 
 /* middleware */
 import {
@@ -13,7 +17,15 @@ import Drop from "../../components/drop";
 import { fetchGreeting } from "../../utils/crowdex-utils";
 
 export default function About(props) {
-  const { profile } = props;
+  const { profile, listings } = props;
+
+  const [showModal, setShowModal] = useState(false)
+  const [modalData, setModalData] = useState({})
+
+  const showSelectedProject = (project) => {
+    setModalData(project)
+    setShowModal(true)
+  }
 
   const [greetingData, setGreetingData] = useState({
     data: "",
@@ -50,6 +62,8 @@ export default function About(props) {
               <div>cDAI Balance: {greetingData.cDAIBalance}</div>
               <div>Data: {greetingData.data}</div>
             </div>
+            {showModal && <Modal data={modalData} closeModal={() => setShowModal(false)}/>}
+            <CardList title={'All Projects'} cardData={listings} showSelectedProject={showSelectedProject} />
             <Drop /> 
           </main>
         </div>
@@ -61,13 +75,22 @@ export default function About(props) {
 
 export async function getServerSideProps(context) {
   const { req } = context;
-
+  await dbConnect()
   const { token } = getAppCookies(req);
   const profile = token ? verifyToken(token.split(' ')[1]) : '';
 
+  const listings = (await Listing.find()).map(listing => 
+    {
+      let l = listing.toObject()
+      delete l['_id']
+      return l
+    }
+  )
+  
   return {
     props: {
       profile,
+      listings
     },
   };
 }
