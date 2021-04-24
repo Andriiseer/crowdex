@@ -9,13 +9,16 @@ const works = [
   '/acastro_210329_1777_nft_0002.png'
 ]
 
-const AdminTools = () => {
+const AdminTools = ({ data }) => {
+  const { status } = data
   const [count, setCount] = useState(100)
 
   return (
-    <div>
-      <div className='text-xl p-4 tracking-tight font-extrabold rounded-full bg-red-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white'>DECLINE</div> 
-      <div className='text-xl p-4 tracking-tight font-extrabold rounded-full bg-green-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white'>APPROVE</div> 
+    <div className='-mt-24'>
+      <div className='text-xl p-4 tracking-tight font-extrabold rounded-full bg-indigo-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white'>Status: {status}</div> 
+      <div className='text-xl p-4 tracking-tight font-extrabold rounded-full bg-red-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white'>REJECT</div> 
+      <div className='text-xl p-4 tracking-tight font-extrabold rounded-full bg-green-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white'>DEPLOY</div> 
+      <div className='text-xl p-4 tracking-tight font-extrabold rounded-full bg-gray-500 m-2 h-12 flex items-center justify-center cursor-not-allowed text-white'>Pause vesting</div> 
     </div>
   )
 }
@@ -58,7 +61,7 @@ export default function Modal (props) {
                   </div>
                 </div>
                 <div className='relative'>
-                  <AdminTools />
+                  <AdminTools data={data} />
                 </div> 
               </div>
             </div>
