@@ -147,7 +147,7 @@ export default function Modal(props) {
                   <div className="mx-auto p-6 flex flex-col text-center">
                     <p class="text-lg opacity-50">Ends</p>
                     <p class="text-sm sm:text-md pt-7 text-white font-bold">
-                      {moment(data.end).fromNow()}
+                      {moment(data.end).from Now()}
                     </p>
                   </div>
                 </div>
