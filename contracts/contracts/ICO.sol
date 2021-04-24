@@ -173,10 +173,7 @@ contract ICO is DSMath {
         (intervalsVested, amountVested) = calculateGrantClaim(_recipient);
         uint256 amountNotVested =
             uint256(
-                sub(
-                    sub(busdGrant.amount, busdGrant.totalClaimed),
-                    amountVested
-                )
+                sub(sub(busdGrant.amount, busdGrant.totalClaimed), amountVested)
             );
 
         require(
@@ -234,8 +231,7 @@ contract ICO is DSMath {
         console.log(elapsedIntervals, block.timestamp, busdGrant.startTime);
         // If over vesting duration, all tokens vested
         if (elapsedIntervals >= busdGrant.vestingDuration) {
-            uint256 remainingGrant =
-                busdGrant.amount - busdGrant.totalClaimed;
+            uint256 remainingGrant = busdGrant.amount - busdGrant.totalClaimed;
             return (busdGrant.vestingDuration, remainingGrant);
         } else {
             // subtract elapsed from claimed to have current vested
@@ -251,25 +247,20 @@ contract ICO is DSMath {
         }
     }
 
-    function redeemNft() external icoEnded() nftIsReady() {
+    function redeemNft() external icoEnded() nftIsReady() returns (uint256) {
         Sale storage sale = sales[msg.sender];
-        require(sale.amount > 0, "only investors");
+        sale.amount - price;
 
-        uint256 tokenAmount = sale.amount.div(price);
+        require(sale.amount >= 0, "only investors");
 
-        // nft = NFT(nftAddress);
-
-        // for (uint256 nftsMinted = 0; nftsMinted < tokenAmount; nftsMinted++) {
-        //     nft.mintNFT(msg.sender);
-        // }
-
-        // sale.amount = 0;
+        nft = NFT(nftAddress);
+        return nft.mintNFT(msg.sender);
     }
 
     function setNftAddress(address deployedNft)
         external
-        nftIsNotReady()
-        onlyAuthor()
+        // nftIsNotReady()
+        onlyAdmin()
     {
         nftAddress = deployedNft;
     }
