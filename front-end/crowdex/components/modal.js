@@ -1,6 +1,7 @@
 import moment from 'moment'
 import { useState } from 'react'
 import Image from 'next/image'
+import axios from 'axios'
 
 const works = [
   '/acastro_210329_1777_nft_0002.png',
@@ -11,6 +12,12 @@ const works = [
 
 const Invest = () => {
   const [count, setCount] = useState(100)
+
+  const invest = async () => {
+    const wallet = typeof window !== 'undefined' ? localStorage.getItem('account') : null
+    if (!wallet) return
+    await axios.post('/api/update-wallet', { wallet, token: 'GoV', contract_address: '0x0012345', isGrant: false, amount: 200, name: 'Govno Token' })
+  }
 
   return (
     <div>
@@ -25,7 +32,7 @@ const Invest = () => {
           <p className='text-xl text-white font-extrabold'>+</p>
         </div>
       </div>
-      <div className='text-xl tracking-tight font-extrabold rounded-full bg-green-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white'>INVEST</div> 
+      <div onClick={() => invest()} className='text-xl tracking-tight font-extrabold rounded-full bg-green-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white'>INVEST</div> 
     </div>
   )
 }

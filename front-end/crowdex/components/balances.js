@@ -1,46 +1,8 @@
 import { useRouter } from 'next/router'
 
-const balances = [
-  {
-    token: 'BUSD',
-    description: 'Binance USD',
-    balance: 1488.69,
-    proposals: []
-  },
-  {
-    token: 'cGOV',
-    description: 'Awesome Shite governance',
-    balance: 200,
-    proposals: ['https://snapshot.org/#/yam.eth']
-  },
-  {
-    token: 'cGOV',
-    description: 'Another Shite governance',
-    balance: 100,
-    proposals: []
-  }
-]
-
-const grants = [
-  {
-    name: 'Awesome Shite',
-    currency: 'BUSD',
-    total: 100,
-    vested: 25,
-    claimed: 11
-  },
-  {
-    name: 'Shite NFT',
-    currency: 'BUSD',
-    total: 100,
-    vested: 0,
-    claimed: 0
-  },
-]
-
 const BalanceRecord = ({ data }) => {
   const router = useRouter()
-  const { token, description, balance, proposals } = data
+  const { token, name, bal, proposals } = data
   return (
 
     <div>
@@ -49,13 +11,13 @@ const BalanceRecord = ({ data }) => {
           {token}
         </p>
         <p className='text-center tracking-tight truncate overflow-ellipsis'>
-          {description}
+          {name}
         </p>
         <p className='text-right tracking-tight'>
-          {balance}
+          {bal}
         </p>
       </div>
-      { proposals.length > 0 && <div onClick={() => router.push(proposals[0])} style={{marginLeft: '8rem'}} className='cursor-pointer  rounded-full py-1 px-3 bg-green-500 text-white text-xs font-bold mb-2 mt-1'>{proposals.length} proposal(s) available</div>}
+      { proposals?.length > 0 && <div onClick={() => router.push(proposals[0])} style={{marginLeft: '8rem'}} className='cursor-pointer  rounded-full py-1 px-3 bg-green-500 text-white text-xs font-bold mb-2 mt-1'>{proposals.length} proposal(s) available</div>}
     </div>
   )
 }
@@ -84,7 +46,9 @@ const GrantRecord = ({ data }) => {
   )
 }
 
-export default function Balances () {
+export default function Balances ({ data }) {
+  const { investments, grants } = data.balances
+
   return (
     <div
       class="origin-top-right z-20 absolute right-0 mt-2 w-80 rounded-md shadow-lg p-4 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
@@ -92,8 +56,8 @@ export default function Balances () {
       aria-orientation="vertical"
       aria-labelledby="user-menu-button"
     >
-      { !balances.length && <p>No balances found</p> }
-      { balances.length && 
+      { !investments.length && <p>No investments found</p> }
+      { investments.length !== 0 && 
       <div className='border-b-2'>
         <p className='text-lg tracking-tight font-bold pb-2'>Balances</p> 
         <div className='grid grid-cols-3'>
@@ -105,10 +69,10 @@ export default function Balances () {
       }
 
       {
-        balances.map((bal, index) => <BalanceRecord key={index+'bal-rec'} data={bal} />)
+        investments.map((bal, index) => <BalanceRecord key={index+'bal-rec'} data={bal} />)
       }
       {
-        grants.length && 
+        grants.length !== 0 && 
         <div className='border-b-2'>
           <p className='text-lg tracking-tight font-bold pt-8 pb-2' >Grants</p> 
           <div className='grid grid-cols-4'>

@@ -13,6 +13,8 @@ const ListingSchema = new mongoose.Schema(
     duration: Number,// Duration in weeks
     constacts: String, // Contacts
     gallery: Array, // Gallery
+    investors: Array,
+    author_address: String,
     total_copies: Number, // Total copies
     goal: String, // Goal
     price: String, // BNB per copy
