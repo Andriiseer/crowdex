@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import UserAccount from './userAccount'
-import Router from 'next/router'
 
 export default function Header () {
   const [showMobileMenu, setShowMobilMenu] = useState(false)
@@ -68,14 +67,14 @@ export default function Header () {
               </button>
             </div>
             <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
-              <div class="flex-shrink-0 flex items-center cursor-pointer" onClick={() => { Router.push('/') }}>
+              <a class="flex-shrink-0 flex items-center cursor-pointer" href='/'>
                 <Image
                   class="block h-8 w-auto"
                   src="/crowdex_w.svg"
                   width={150}
                   height={40}
                 />
-              </div>
+              </a>
               <div class="hidden sm:block sm:ml-6">
                 <div class="flex space-x-4">
                   {/* <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" --> */}
