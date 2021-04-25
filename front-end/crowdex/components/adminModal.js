@@ -9,19 +9,13 @@ import NFT from "../artifacts/artifacts/contracts/NFT.sol/NFT.json";
 
 import axios from 'axios'
 
-const works = [
-  "/acastro_210329_1777_nft_0002.png",
-  "/acastro_210329_1777_nft_0002.png",
-  "/acastro_210329_1777_nft_0002.png",
-  "/acastro_210329_1777_nft_0002.png",
-];
 
 const getNftUri = async (listing_id, data) => {
   if (typeof window.ethereum == "undefined") return
 
-  const daiAddress = "0x5B7088C7680fCE38916EFFB002A78C051102E121";
+  const daiAddress = "0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee";
   const { price, name, authorName, author_address, duration, total_copies } = data
-  const INTERVAL = 120 // 120 seconds TODO change to week in prod
+  const INTERVAL = 604800 // one week
   const TOTAL_SUPPLY = ethers.utils.parseUnits('1000000', 'ether')
   const MIN_PURCHASE = ethers.utils.parseUnits(price + '', "ether");
   const MAX_PURCHASE = ethers.utils.parseUnits('50000', "ether");
@@ -50,7 +44,7 @@ const getNftUri = async (listing_id, data) => {
     MAX_PURCHASE, //_maxPurchase (in DAI)
     daiAddress, // Payment token address
     author_address, // Author address
-    30, // Vesting interval  TODO Replace with days in mainnet
+    86400, // Vesting interval 1 day
   );
   
   await ico_contract.deployed();
@@ -70,11 +64,6 @@ const getNftUri = async (listing_id, data) => {
   console.log("NFT token address: ", nft_contract.address);
 
   await axios.post('/api/admin/initiate-listing', { listing_id, gov: gov_token.address, ico: ico_contract.address, nft: nft_contract.address, end: (Math.floor(Date.now() / 1000)) + duration * INTERVAL })
-  // ico_contract.setNftAddress(nft_contract.address, {
-  //   gasLimit: "400000",
-  // });
-  // const result = await ico_contract.redeemNft({ gasLimit: "400000" });
-
 };
 const AdminTools = ({ data }) => {
   const { status, _id } = data;

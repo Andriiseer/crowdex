@@ -18,7 +18,7 @@ export default function Card (props) {
     if (!window.ethereum || !ico_address) return
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     const signer = provider.getSigner();
-    const daiAddress = "0x5B7088C7680fCE38916EFFB002A78C051102E121";
+    const daiAddress = "0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee";
 
     const Dai = new ethers.Contract(daiAddress, Token.abi, signer);
     const dai = await Dai.attach(daiAddress);
