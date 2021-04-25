@@ -36,7 +36,7 @@ const getNftUri = async (listing_id, data) => {
   const gov_token = await token.deploy(
     "Governance Project X token",
     "govPRX",
-    totalSupply
+    TOTAL_SUPPLY
   );
 
   await gov_token.deployed();
@@ -50,7 +50,7 @@ const getNftUri = async (listing_id, data) => {
     TOTAL_SUPPLY, //_availableTokens for the ICO. can be less than maxTotalSupply
     MIN_PURCHASE, //_minPurchase (in DAI)
     MAX_PURCHASE, //_maxPurchase (in DAI)
-    fake_dai, // Payment token address
+    daiAddress, // Payment token address
     author_address, // Author address
     30, // Vesting interval  TODO Replace with days in mainnet
   );

@@ -22,22 +22,29 @@ const Invest = ({ data }) => {
     const wallet = typeof window !== 'undefined' ? localStorage.getItem('account') : null
     if (!wallet || count <= 0) return
 
+    const daiAddress = "0x5B7088C7680fCE38916EFFB002A78C051102E121";
+
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     const signer = provider.getSigner();
-    const ico = new ethers.ContractFactory(ICO.abi, ICO.bytecode, signer);    
+    const ico = new ethers.Contract(data.ico_address, ICO.abi, signer);    
     const ico_contract = await ico.attach(data.ico_address)
 
-    const token = new ethers.ContractFactory(Token.abi, Token.bytecode, signer);
-    const payment_contract = token.attach('0x5e54a8845AdD1e2bb1f8d1798e96BADEF64fC8de')
-    
-    await payment_contract.approve(data.ico_address, ethers.utils.parseUnits(data.price * count + '', 'ether'))
-    await ico_contract.buy(ethers.utils.parseUnits(data.price * count + '', 'ether'), { gasLimit: '400000' }) 
+    const fakeDAI = new ethers.Contract(daiAddress, Token.abi, signer);
+    const fake_dai = await fakeDAI.attach(daiAddress);
+
+    await fake_dai.approve(
+      ico_contract.address,
+      await ethers.utils.parseUnits(data.price * count + 1000 + '', "ether")
+    );
+
+    await ico_contract.buy(await ethers.utils.parseUnits(data.price * count + '', "ether"), {
+      gasLimit: "400000",
+    });
 
     await axios.post('/api/update-wallet', { wallet, token: 'govPRX', ico_address: data.ico_address, token_address: data.token_address, isGrant: false, amount: count, name: 'Gov'+data.name })
   }
 
   
-
   return (
     <div>
       {count > 0 && <p class='absolute text-md sm:text-lg text-center text-white font-bold leading-none -mt-6 ml-8'>Buy {count} tokens for {data.price * count}.</p>}
