@@ -247,14 +247,21 @@ contract ICO is DSMath {
         }
     }
 
-    function redeemNft() external icoEnded() nftIsReady() returns (uint256) {
+    function redeemNft()
+        external
+        icoEnded()
+        nftIsReady()
+        returns (string memory)
+    {
         Sale storage sale = sales[msg.sender];
         sale.amount - price;
 
         require(sale.amount >= 0, "only investors");
 
         nft = NFT(nftAddress);
-        return nft.mintNFT(msg.sender);
+        uint256 newItemId = nft.mintNFT(msg.sender);
+        string memory tokenUri = nft.tokenURI(newItemId);
+        return tokenUri;
     }
 
     function setNftAddress(address deployedNft)

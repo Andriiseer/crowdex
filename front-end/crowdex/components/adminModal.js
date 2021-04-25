@@ -3,9 +3,9 @@ import { useState } from "react";
 import Image from "next/image";
 
 import { ethers } from "ethers";
-import Token from "../artifacts/contracts/Token.sol/Token.json";
-import ICO from "../artifacts/contracts/ICO.sol/ICO.json";
-import NFT from "../artifacts/contracts/NFT.sol/NFT.json";
+import Token from "../artifacts/artifacts/contracts/Token.sol/Token.json";
+import ICO from "../artifacts/artifacts/contracts/ICO.sol/ICO.json";
+import NFT from "../artifacts/artifacts/contracts/NFT.sol/NFT.json";
 
 const works = [
   "/acastro_210329_1777_nft_0002.png",
@@ -13,9 +13,11 @@ const works = [
   "/acastro_210329_1777_nft_0002.png",
   "/acastro_210329_1777_nft_0002.png",
 ];
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const getNftUri = async () => {
   const icoAddress = "0xb272023ba374815954B1673D53F92057e680AB0C";
   const nftAddress = "0x17dEbf519c6cAA9cc0cF868D4E66BDdFdEEE66fd";
+  const daiAddress = "0x5B7088C7680fCE38916EFFB002A78C051102E121";
   if (typeof window.ethereum !== "undefined") {
     // const accounts = await window.ethereum.enable();
     // const account = accounts[0];
@@ -28,8 +30,11 @@ const getNftUri = async () => {
     const totalSupply = ONE_MIL;
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     const signer = provider.getSigner();
-    // const fake_dai = new ethers.Contract(daiAddress, Token.abi, signer);
+    const fakeDAI = new ethers.Contract(daiAddress, Token.abi, signer);
     const token = new ethers.ContractFactory(Token.abi, Token.bytecode, signer);
+    const fake_dai = await fakeDAI.attach(
+      "0x5B7088C7680fCE38916EFFB002A78C051102E121"
+    );
     const nft = new ethers.ContractFactory(NFT.abi, NFT.bytecode, signer);
     const gov_token = await token.deploy(
       "Governance Project X token",
@@ -41,33 +46,55 @@ const getNftUri = async () => {
     const ico = new ethers.ContractFactory(ICO.abi, ICO.bytecode, signer);
     const ico_contract = await ico.deploy(
       gov_token.address, // GOV token address
-      120, // Duration (seconds)
+      60, // Duration (seconds)
       PRICE, // Price
       totalSupply, //_availableTokens for the ICO. can be less than maxTotalSupply
       MIN_PURCHASE, //_minPurchase (in DAI)
       MAX_PURCHASE, //_maxPurchase (in DAI)
-      "0x5e54a8845AdD1e2bb1f8d1798e96BADEF64fC8de", // Payment token address
+      "0x5B7088C7680fCE38916EFFB002A78C051102E121", // Payment token address
       "0x390f70Bd71263C9bF057585E03839252f42dF59C", // Author address
       30 // Vesting interval
     );
     await ico_contract.deployed();
     const nft_contract = await nft.deploy(
-      "NFO Project #5",
-      "NP#0",
-      100,
+      "NFO Project #8",
+      "NP#8",
+      10,
+      "QmaxkSWuBCEGYwLgjEgSYmygECYVn86Ef18QEwPg88geEM/prik",
       ico_contract.address
     );
+    await gov_token.updateAdmin(ico_contract.address);
+    await ico_contract.start();
+    await nft_contract.deployed();
+
+    await fakeDAI.approve(
+      ico_contract.address,
+      await ethers.utils.parseUnits("1000", "ether")
+    );
+
+    await ico_contract.buy(await ethers.utils.parseUnits("60", "ether"), {
+      gasLimit: "400000",
+    });
+    await ico_contract.buy(await ethers.utils.parseUnits("140", "ether"), {
+      gasLimit: "400000",
+    });
+    await ico_contract.buy(await ethers.utils.parseUnits("30", "ether"), {
+      gasLimit: "400000",
+    });
+
     // await contract.mint(account.address, ONE_THOU);
     console.log("Gov token address: ", gov_token.address);
     console.log("ICO contract address: ", ico_contract.address);
     console.log("NFT token address: ", nft_contract.address);
-    // ico_contract.setNftAddress(nftAddress, {
-    //   gasLimit: "400000",
-    // });
+    await wait(60000);
+    ico_contract.setNftAddress(nft_contract.address, {
+      gasLimit: "400000",
+    });
+    const result = await ico_contract.redeemNft({ gasLimit: "400000" });
     // const address = signer.getAddress();
 
     // const tokenUri = await ico_contract.redeemNft({ gasLimit: "400000" });
-    // console.log(tokenUri);
+    console.log(result);
     // console.log(await ico.buy(BUY_AMM), { gasLimit: "4000
   }
 };
@@ -147,7 +174,7 @@ export default function Modal(props) {
                   <div className="mx-auto p-6 flex flex-col text-center">
                     <p class="text-lg opacity-50">Ends</p>
                     <p class="text-sm sm:text-md pt-7 text-white font-bold">
-                      {moment(data.end).from Now()}
+                      {moment(data.end).fromNow()}
                     </p>
                   </div>
                 </div>

@@ -11,28 +11,27 @@ contract NFT is ERC721URIStorage, ERC721Enumerable {
     Counters.Counter private _tokenIds;
     address public admin;
     uint256 public maxTotalSupply;
+    string public folderName;
 
     constructor(
         string memory name,
         string memory symbol,
         uint256 _maxTotalSupply,
+        string memory _folderName,
         address _admin
     ) ERC721(name, symbol) {
         admin = _admin;
         maxTotalSupply = _maxTotalSupply;
+        folderName = _folderName;
     }
 
     function mintNFT(address to) public returns (uint256) {
-        require(msg.sender == admin, "only baka admin");
-
-        // for (uint256 nftsMinted = 0; nftsMinted < tokenAmount; nftsMinted++) {
-        // }
+        require(msg.sender == admin, "only admin");
+        require(maxTotalSupply - 1 >= _tokenIds.current(), "oversupplied");
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
-
         _safeMint(to, newItemId);
-        // require(false, "got here 28");
-        // tokenURI(newItemId);
+        string memory nftUri = tokenURI(newItemId);
         return newItemId;
     }
 
@@ -51,6 +50,14 @@ contract NFT is ERC721URIStorage, ERC721Enumerable {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
+    function append(
+        string memory a,
+        string memory b,
+        string memory c
+    ) internal pure returns (string memory) {
+        return string(abi.encodePacked(a, b, c));
+    }
+
     function tokenURI(uint256 tokenId)
         public
         view
@@ -61,7 +68,10 @@ contract NFT is ERC721URIStorage, ERC721Enumerable {
     }
 
     function _baseURI() internal view override returns (string memory) {
-        return "https://gateway.pinata.cloud/ipfs/";
+        string memory uri_link =
+            append("https://gateway.pinata.cloud/ipfs/", folderName, "/");
+
+        return uri_link;
     }
 
     function supportsInterface(bytes4 interfaceId)
