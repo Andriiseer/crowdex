@@ -207,7 +207,7 @@ export default function Modal (props) {
                   </div>
                 </div>
                 {
-                  (isAuthor() || data.status == 'nftReady') && <div className='relative'>
+                  <div className='relative'>
                     { data.status !== 'nftReady' && <Invest data={data}/> }
                     { data.status === 'nftReady' && <WithdrawNft data={data}/> }
                   </div> 
