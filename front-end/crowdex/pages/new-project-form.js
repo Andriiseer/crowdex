@@ -17,6 +17,7 @@ export default function NewProjectForm () {
   const [data, setData] = useState(DEFAULT_FORMDATA)
 
   const updateWallet = async () => {
+    if (!window.ethereum) return
     setWallet((await window.ethereum.request({ method: "eth_requestAccounts" }))[0])
   }
 
@@ -46,7 +47,7 @@ export default function NewProjectForm () {
                 
               </div>
               <p className='relative text-white text-4xl tracking-tight font-extrabold sm:text-5xl pl-6 pt-6'>{ wallet ? 'New Project Request' : 'Please connect your wallet'}</p>
-              <p className='relative text-white  text-xl tracking-wide font-light pl-6 pt-4 opacity-70 overflow-ellipsis'>{ wallet ? 'Publish crowdfunding request for your next NFT artwork' : 'Publishing requests are only available to users with connected wallets'}</p>
+              <p className='relative text-white  text-xl tracking-wide font-light pl-6 pt-4 opacity-70 overflow-ellipsis'>{ wallet ? 'Publish crowdfunding request for your next NFT artwork' : 'Publishing requests are only available for users with connected wallets'}</p>
             </div>
             <div className='mx-auto p-6 text-center'>
               <div>

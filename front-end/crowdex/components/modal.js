@@ -3,8 +3,9 @@ import { useState } from 'react'
 import Image from 'next/image'
 import axios from 'axios'
 import { ethers } from "ethers";
-import ICO from "../artifacts/contracts/ICO.sol/ICO.json";
-import Token from "../artifacts/contracts/Token.sol/Token.json";
+import ICO from "../artifacts/artifacts/contracts/ICO.sol/ICO.json";
+import Token from "../artifacts/artifacts/contracts/Token.sol/Token.json";
+import Ribbon from './ribbon'
 
 const works = [
   '/acastro_210329_1777_nft_0002.png',
@@ -44,22 +45,75 @@ const Invest = ({ data }) => {
     await axios.post('/api/update-wallet', { wallet, token: 'govPRX', ico_address: data.ico_address, token_address: data.token_address, isGrant: false, amount: count, name: 'Gov'+data.name })
   }
 
+
+  const withdrawTokens = async () => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    const signer = provider.getSigner();
+
+    const ico = new ethers.Contract(data.ico_address, ICO.abi, signer);    
+    const ico_contract = await ico.attach(data.ico_address)
+
+    await ico_contract.withdrawTokens({
+      gasLimit: "400000",
+    })
+  }
+
+  const isInvestor = () => {
+    const wallet = typeof window !== 'undefined' ? localStorage.getItem('account') : null
+    if (!wallet) return false
+    if (data.investors.includes(wallet)) return true
+  }
+
+  const isOver = parseInt(data.end) * 1000 < Date.now()
+
+  const handleInvestWithdraw = async () => {
+    if (isOver && isInvestor()) return withdrawTokens()
+    if (!isOver) return invest()
+  }
   
   return (
     <div>
       {count > 0 && <p class='absolute text-md sm:text-lg text-center text-white font-bold leading-none -mt-6 ml-8'>Buy {count} tokens for {data.price * count}.</p>}
       <div className='flex justify-evenly items-center sm:mt-8 '>
-        <div onClick={() => count > 0 && setCount(count - 1)} className={'rounded-full bg-green-500 m-2 h-12 w-12 flex items-center justify-center cursor-pointer' + ((count > 0) ? ' bg-green-500' : ' cursor-not-allowed')}>
+        <div onClick={() => (count > 0 && !isOver) && setCount(count - 1)} className={'rounded-full bg-green-500 m-2 h-12 w-12 flex items-center justify-center cursor-pointer' + ((count > 0 && !isOver) ? ' bg-green-500' : ' cursor-not-allowed')}>
           <p className='text-xl text-white font-extrabold'>-</p>
         </div>
         <div className='rounded-full bg-green-500 m-2 h-12 w-24 flex items-center justify-center cursor-pointer'>
           <p className='text-xl text-white font-extrabold'>{count}</p>
         </div>
-        <div onClick={() => count < data.total_copies && setCount(count + 1)} className={'rounded-full bg-green-500 m-2 h-12 w-12 flex items-center justify-center cursor-pointer' + ((count < data.total_copies) ? ' bg-green-500' : ' cursor-not-allowed')}>
+        <div onClick={() => (count < data.total_copies && !isOver) && setCount(count + 1)} className={'rounded-full bg-green-500 m-2 h-12 w-12 flex items-center justify-center cursor-pointer' + ((count < data.total_copies && !isOver) ? ' bg-green-500' : ' cursor-not-allowed')}>
           <p className='text-xl text-white font-extrabold'>+</p>
         </div>
       </div>
-      <div onClick={() => invest()} className={'text-xl tracking-tight font-extrabold rounded-full bg-gray-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white ' + ((count > 0) ? ' bg-green-500' : ' cursor-not-allowed')}>Buy Tokens</div> 
+      <div onClick={() => handleInvestWithdraw()} className={'text-xl tracking-tight font-extrabold rounded-full bg-gray-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white ' + ((count > 0 || isOver) ? ' bg-green-500' : ' cursor-not-allowed')}>{ isOver ? (isInvestor()) ? "Withdraw tokens" : "Funding Closed" : "Buy Tokens" }</div> 
+    </div>
+  )
+}
+
+const WithdrawNft = ({ data }) => {
+
+  const withdrawToken = async () => {
+    if (!isInvestor()) return
+    // const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    // const signer = provider.getSigner();
+
+    // const ico = new ethers.Contract(data.ico_address, ICO.abi, signer);    
+    // const ico_contract = await ico.attach(data.ico_address)
+
+    // await ico_contract.withdrawTokens({
+    //   gasLimit: "400000",
+    // })
+  }
+
+  const isInvestor = () => {
+    const wallet = typeof window !== 'undefined' ? localStorage.getItem('account') : null
+    if (!wallet) return false
+    if (data.investors.includes(wallet)) return true
+  }
+  
+  return (
+    <div>
+      {isInvestor() && <div onClick={() => withdrawToken()} className={'text-xl tracking-tight font-extrabold rounded-full bg-gray-500 m-2 mt-12 px-4 h-12 flex items-center justify-center cursor-pointer text-white bg-green-500'}>{"Claim" }</div> }
     </div>
   )
 }
@@ -73,7 +127,8 @@ export default function Modal (props) {
         {/* <!-- This element is to trick the browser into centering the modal contents. --> */}
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
     
-        <div class="inline-block align-bottom rounded-2xl bg-white text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div class="relative inline-block align-bottom rounded-2xl bg-white text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+          {data.status === 'nftReady' && <Ribbon />}
           <div class="bg-white">
             <div className='relative max-w-full sm:h-60 h-96 rounded-t-2xl flex flex-col'>
               <div className='absolute w-full sm:h-60 h-96  rounded-t-2xl flex flex-col truncate'>
@@ -106,7 +161,8 @@ export default function Modal (props) {
                   </div>
                 </div>
                 <div className='relative'>
-                  <Invest data={data}/>
+                  { data.status !== 'nftReady' && <Invest data={data}/> }
+                  { data.status === 'nftReady' && <WithdrawNft data={data}/> }
                 </div> 
               </div>
             </div>

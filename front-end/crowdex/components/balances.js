@@ -1,5 +1,9 @@
-import { useRouter } from "next/router";
+import { useState, useEffect } from 'react';
 import axios from "axios";
+
+import { ethers } from "ethers";
+import Token from '../artifacts/artifacts/contracts/Token.sol/Token.json'
+
 const getProposals = async () => {
   axios
     .get("https://hub.snapshot.page/api/crowdex.eth/proposals")
@@ -12,8 +16,8 @@ const getProposals = async () => {
       console.log(error);
     });
 };
+
 const BalanceRecord = ({ data }) => {
-  const router = useRouter();
   const { token, name, bal, proposals } = data;
 
   return (
@@ -62,6 +66,7 @@ const GrantRecord = ({ data }) => {
 };
 
 export default function Balances({ data }) {
+  const [balances, setBalances] = useState({ investments: [], grants: [] })
 
   if (!data?.balances) return (
     <div
@@ -73,9 +78,31 @@ export default function Balances({ data }) {
     >
       <p>No investments found</p>
     </div>
-  ) 
+  )
+  
+  const getBalances = async () => {
+    if (!data?.balances) return
 
-  const { investments, grants } = data.balances;
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    const signer = provider.getSigner();
+    let investments = []
+
+    for (let investment of data.balances.investments) {
+      const GovToken = new ethers.Contract(investment.contract_address, Token.abi, signer);
+      const govToken = await GovToken.attach(investment.contract_address);
+      const balance = await govToken.balanceOf(data.balances.wallet_address)
+      const bal = (await ethers.utils.formatEther(balance.toString()))
+      investments.push({...investment, bal: parseFloat(bal) })
+    }
+
+    setBalances({...data.balances, investments })
+  }
+
+  useEffect(() => {
+    getBalances()
+  }, [])
+
+  const { investments, grants } = balances;
 
   return (
     <div

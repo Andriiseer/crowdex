@@ -28,9 +28,7 @@ const getNftUri = async (listing_id, data) => {
 
   const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
   const signer = provider.getSigner();
-  const fakeDAI = new ethers.Contract(daiAddress, Token.abi, signer);
   const token = new ethers.ContractFactory(Token.abi, Token.bytecode, signer);
-  const fake_dai = await fakeDAI.attach(daiAddress);
 
   const nft = new ethers.ContractFactory(NFT.abi, NFT.bytecode, signer);
   const gov_token = await token.deploy(
