@@ -70,7 +70,7 @@ export default function Header () {
               <a class="flex-shrink-0 flex items-center cursor-pointer" href='/'>
                 <Image
                   class="block h-8 w-auto"
-                  src="/crowdex_w.svg"
+                  src="https://gateway.pinata.cloud/ipfs/QmQWgwh4es468Ajc1p3nZg3UspXNHRpyNgb6MkJnTtcsj6"
                   width={150}
                   height={40}
                 />
