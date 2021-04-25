@@ -12,6 +12,7 @@ export default async (req, res) => {
     description,
     twitter_handle,
     total_copies,
+    gallery
   } = req.body
 
   await Listing.create( 
@@ -26,10 +27,7 @@ export default async (req, res) => {
       total_copies,
       price: goal / total_copies,
       status: 'pending',
-      gallery: [
-        '/acastro_210329_1777_nft_0002.png',
-        '/acastro_210329_1777_nft_0002.png',
-      ]
+      gallery
     }
   )
 

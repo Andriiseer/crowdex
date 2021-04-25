@@ -167,7 +167,7 @@ export default function Modal(props) {
             <p className="text-3xl text-center font-bold pt-12 p-6 pb-4 overflow-ellipsis">
               Authors Portfolio
             </p>
-            {works.map((work, index) => (
+            {data.gallery.map((work, index) => (
               <div className="m-4 relative w-11/12 h-60" key={index + "works"}>
                 <Image src={work} layout="fill" objectFit="cover" />
               </div>

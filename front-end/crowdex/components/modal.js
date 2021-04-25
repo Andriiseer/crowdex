@@ -93,16 +93,14 @@ const Invest = ({ data }) => {
 
 const WithdrawNft = ({ data }) => {
 
-  const withdrawToken = async () => {
+  const withdrawNonFunToken = async () => {
     if (!isInvestor()) return
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     const signer = provider.getSigner();
 
     const ico = new ethers.Contract(data.ico_address, ICO.abi, signer);    
     const ico_contract = await ico.attach(data.ico_address)
-    let resp = await ico_contract.redeemNft({gasLimit: '400000'})
-    console.log(resp)
-    return resp
+    await ico_contract.redeemNft({gasLimit: '400000'})
   }
 
   const isInvestor = () => {
@@ -113,19 +111,40 @@ const WithdrawNft = ({ data }) => {
   
   return (
     <div>
-      {isInvestor() && <div onClick={() => withdrawToken()} className={'text-xl tracking-tight font-extrabold rounded-full bg-gray-500 m-2 mt-12 px-4 h-12 flex items-center justify-center cursor-pointer text-white bg-green-500'}>{"Claim" }</div> }
+      {isInvestor() && <div onClick={() => withdrawNonFunToken()} className={'text-xl tracking-tight font-extrabold rounded-full bg-gray-500 m-2 mt-12 px-4 h-12 flex items-center justify-center cursor-pointer text-white bg-green-500'}>{"Claim" }</div> }
     </div>
   )
 }
 
 export default function Modal (props) {
   const [amountFunded, setAmountFunded] = useState('~')
+  const [nftImage, setNftImage] = useState(null)
   const { closeModal, data } = props
   const { ico_address } = data
 
   useEffect(() => {
     getAmountFunded()
+    checkOwnership()
   }, [])
+
+  const isInvestor = () => {
+    const wallet = typeof window !== 'undefined' ? localStorage.getItem('account') : null
+    if (!wallet) return false
+    if (data.investors.includes(wallet)) return true
+  }
+
+  const checkOwnership = async () => {
+    if (!isInvestor()) return
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    const signer = provider.getSigner();
+
+    const Nft = new ethers.Contract(data.nft_address, NFT.abi, signer);
+    const nft_contract = await Nft.attach(data.nft_address);
+    const link = await nft_contract.tokenURI(1)
+
+    setNftImage(link.slice(0, link.length - 2))
+
+  }
 
   const getAmountFunded = async () => {
     if (!window.ethereum || !ico_address) return
@@ -199,11 +218,19 @@ export default function Modal (props) {
             { isAuthor() && data.status !== 'nftReady' && 
               <Drop data={data} /> 
             }
-            { (!isAuthor() || data.status == 'nftReady') && (
+            {
+              nftImage &&
+              <div className='m-4 relative'> 
+                <img
+                  src={nftImage}
+                />
+              </div>
+            }
+            { (!isAuthor() || data.status !== 'nftReady') && (
               <div>
                 <p className='text-3xl text-center font-bold pt-12 p-6 pb-4 overflow-ellipsis'>Authors Portfolio</p>
                 {
-                  works.map((work, index) => (
+                  data.gallery.map((work, index) => (
                     <div className='m-4 relative w-11/12 h-60' key={index+'works'}>
                       <Image
                         src={work}
