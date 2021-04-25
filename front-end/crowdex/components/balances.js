@@ -62,6 +62,19 @@ const GrantRecord = ({ data }) => {
 };
 
 export default function Balances({ data }) {
+
+  if (!data?.balances) return (
+    <div
+      class="origin-top-right z-20 absolute right-0 mt-2 w-80 rounded-md shadow-lg p-4 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+      role="menu"
+      aria-orientation="vertical"
+      aria-labelledby="user-menu-button"
+      onClick={() => getProposals()}
+    >
+      <p>No investments found</p>
+    </div>
+  ) 
+
   const { investments, grants } = data.balances;
 
   return (

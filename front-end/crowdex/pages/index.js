@@ -37,7 +37,7 @@ export default function Home(props) {
       <Banner />
       {showModal && <Modal data={modalData} closeModal={() => setShowModal(false)}/>}
       { invested.length !== 0 && <CardList title={'Your Investments'} cardData={invested} showSelectedProject={showSelectedProject} /> }
-      { data && <CardList title={'Current Funding Projects'} cardData={data.current} showSelectedProject={showSelectedProject} /> }
+      { data && <CardList title={'Current Projects'} cardData={data.current} showSelectedProject={showSelectedProject} /> }
       { data && <CardList title={'Past Projects'} cardData={data.past} showSelectedProject={showSelectedProject} /> }
     </div>
   );

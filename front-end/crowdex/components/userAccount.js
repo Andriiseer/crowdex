@@ -34,13 +34,16 @@ export default function UserAccount () {
     return () => window.removeEventListener("click", handleClick);
   }, [showBalances])
 
-
+  const handleWalletClick = () => {
+    if (account === 'Wallet') return getAccount()
+    setshowBalances(!showBalances)
+  }
 
   return (
     <div class="ml-3 relative">
       <div>
         <button
-          onClick={() => setshowBalances(!showBalances)}
+          onClick={() => handleWalletClick()}
           type="button"
           class="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
           id="user-menu-button"

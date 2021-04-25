@@ -70,7 +70,7 @@ export async function getServerSideProps(context) {
   const listings = (await Listing.find()).map(listing => 
     {
       let l = listing.toObject()
-      delete l['_id']
+      l._id = l._id.toString()
       return l
     }
   )

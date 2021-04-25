@@ -76,10 +76,6 @@ contract ICO is DSMath {
             "_availableTokens should be > 0 and <= maxTotalSupply"
         );
         require(_minPurchase > 0, "_minPurchase should > 0");
-        require(
-            _maxPurchase > 0 && _maxPurchase <= _availableTokens,
-            "_maxPurchase should be > 0 and <= _availableTokens"
-        );
 
         authorAddress = _authorAddress;
         vestingInterval = _vestingInterval;

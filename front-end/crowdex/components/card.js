@@ -2,7 +2,8 @@ import moment from 'moment'
 
 export default function Card (props) {
   const { showSelectedProject } = props
-  const { name, authorName, filled, goal, funded, end, currency, gallery } = props.data
+  const { name, authorName, filled, goal, funded, end, gallery } = props.data
+  const currency = 'BUSD'
 
   return (
     <div onClick={showSelectedProject} className='max-w-full sm:w-96 w-full rounded-2xl h-60 shadow-xl truncate mx-auto cursor-pointer'>
@@ -27,11 +28,11 @@ export default function Card (props) {
         </div>
         <div className='mx-auto flex flex-col text-center'>
           <p class='text-lg pt-6 opacity-50'>Funded</p>
-          <p class='text-md sm:text-lg pt-6 text-green-500'>{funded} {currency}</p>
+          <p class='text-md sm:text-lg pt-6 text-green-500'>{funded || 0} {currency}</p>
         </div>
         <div className='mx-auto flex flex-col text-center'>
           <p class='text-lg pt-6 opacity-50'>Ends</p>
-          <p class='text-sm sm:text-md pt-7 text-green-500'>{moment(end).fromNow()}</p>
+          <p class='text-sm sm:text-md pt-7 text-green-500'>{ moment(parseInt(end) * 1000).fromNow()}</p>
         </div>
       </div>
     </div>
