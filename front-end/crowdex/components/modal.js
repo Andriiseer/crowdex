@@ -181,7 +181,7 @@ export default function Modal (props) {
                 <img 
                   className='filter grayscale-20 brightness-50'
                   src={data.gallery[0]}
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                 />
               </div>
               <p className='relative text-white text-4xl tracking-tight font-extrabold sm:text-5xl pl-6 pt-6'>{data.name}</p>
@@ -231,11 +231,10 @@ export default function Modal (props) {
                 <p className='text-3xl text-center font-bold pt-12 p-6 pb-4 overflow-ellipsis'>Authors Portfolio</p>
                 {
                   data.gallery.map((work, index) => (
-                    <div className='m-4 relative w-11/12 h-60' key={index+'works'}>
-                      <Image
+                    <div className='m-4 relative' key={index+'works'}>
+                      <img
                         src={work}
-                        layout='fill'
-                        objectFit='cover'
+                        style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                       />
                     </div>
                   ))
