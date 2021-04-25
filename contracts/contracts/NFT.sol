@@ -25,14 +25,14 @@ contract NFT is ERC721URIStorage, ERC721Enumerable {
         folderName = _folderName;
     }
 
-    function mintNFT(address to) public returns (uint256) {
+    function mintNFT(address to) public returns (string memory) {
         require(msg.sender == admin, "only admin");
         require(maxTotalSupply - 1 >= _tokenIds.current(), "oversupplied");
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         _safeMint(to, newItemId);
         string memory nftUri = tokenURI(newItemId);
-        return newItemId;
+        return nftUri;
     }
 
     function _burn(uint256 tokenId)

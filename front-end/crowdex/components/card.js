@@ -42,7 +42,6 @@ export default function Card (props) {
         </div>
         <div className='flex justify-between relative'>
           <p className='sm:text-md text-xs pl-6 pt-4 opacity-70 overflow-ellipsis text-white'>by {authorName}</p>
-          <p className='sm:text-md text-xs pr-6 pt-4 text-white'>{filled}% filled</p>
         </div>
       </div>
       <div className='grid grid-cols-3'>

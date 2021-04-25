@@ -1,11 +1,13 @@
 import moment from 'moment'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import axios from 'axios'
 import { ethers } from "ethers";
 import ICO from "../artifacts/artifacts/contracts/ICO.sol/ICO.json";
+import NFT from '../artifacts/artifacts/contracts/NFT.sol/NFT.json'
 import Token from "../artifacts/artifacts/contracts/Token.sol/Token.json";
 import Ribbon from './ribbon'
+import Drop from "./drop";
 
 const works = [
   '/acastro_210329_1777_nft_0002.png',
@@ -44,7 +46,6 @@ const Invest = ({ data }) => {
 
     await axios.post('/api/update-wallet', { wallet, token: 'govPRX', ico_address: data.ico_address, token_address: data.token_address, isGrant: false, amount: count, name: 'Gov'+data.name })
   }
-
 
   const withdrawTokens = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
@@ -94,15 +95,14 @@ const WithdrawNft = ({ data }) => {
 
   const withdrawToken = async () => {
     if (!isInvestor()) return
-    // const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-    // const signer = provider.getSigner();
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    const signer = provider.getSigner();
 
-    // const ico = new ethers.Contract(data.ico_address, ICO.abi, signer);    
-    // const ico_contract = await ico.attach(data.ico_address)
-
-    // await ico_contract.withdrawTokens({
-    //   gasLimit: "400000",
-    // })
+    const ico = new ethers.Contract(data.ico_address, ICO.abi, signer);    
+    const ico_contract = await ico.attach(data.ico_address)
+    let resp = await ico_contract.redeemNft({gasLimit: '400000'})
+    console.log(resp)
+    return resp
   }
 
   const isInvestor = () => {
@@ -119,7 +119,34 @@ const WithdrawNft = ({ data }) => {
 }
 
 export default function Modal (props) {
+  const [amountFunded, setAmountFunded] = useState('~')
   const { closeModal, data } = props
+  const { ico_address } = data
+
+  useEffect(() => {
+    getAmountFunded()
+  }, [])
+
+  const getAmountFunded = async () => {
+    if (!window.ethereum || !ico_address) return
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    const signer = provider.getSigner();
+    const daiAddress = "0x5B7088C7680fCE38916EFFB002A78C051102E121";
+
+    const Dai = new ethers.Contract(daiAddress, Token.abi, signer);
+    const dai = await Dai.attach(daiAddress);
+    const balance = await dai.balanceOf(ico_address)
+
+    const bal = (await ethers.utils.formatEther(balance.toString()))
+    setAmountFunded(bal)
+  }
+
+  const isAuthor = () => {
+    const wallet = typeof window !== 'undefined' ? localStorage.getItem('account') : null
+    if (!wallet) return false
+    return data.author_address === wallet
+  }
+
   return (
     <div class="fixed z-30 inset-0 overflow-y-auto">
       <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -149,7 +176,7 @@ export default function Modal (props) {
                   </div>
                   <div className='mx-auto p-6 flex flex-col text-center'>
                     <p class='text-lg opacity-50'>Funded</p>
-                    <p class='text-md sm:text-lg pt-6 text-white font-bold'>{data.funded || 0} {currency}</p>
+                    <p class='text-md sm:text-lg pt-6 text-white font-bold'>{amountFunded} {currency}</p>
                   </div>
                   <div className='mx-auto p-6 flex flex-col text-center'>
                     <p class='text-lg opacity-50'>Ends</p>
@@ -160,26 +187,34 @@ export default function Modal (props) {
                     <p class='text-sm sm:text-md pt-7 text-white font-bold'>{data.price} {currency}</p>
                   </div>
                 </div>
-                <div className='relative'>
-                  { data.status !== 'nftReady' && <Invest data={data}/> }
-                  { data.status === 'nftReady' && <WithdrawNft data={data}/> }
-                </div> 
+                {
+                  (isAuthor() || data.status == 'nftReady') && <div className='relative'>
+                    { data.status !== 'nftReady' && <Invest data={data}/> }
+                    { data.status === 'nftReady' && <WithdrawNft data={data}/> }
+                  </div> 
+                }
               </div>
             </div>
             
-
-            <p className='text-3xl text-center font-bold pt-12 p-6 pb-4 overflow-ellipsis'>Authors Portfolio</p>
-            {
-              works.map((work, index) => (
-                <div className='m-4 relative w-11/12 h-60' key={index+'works'}>
-                  <Image
-                    src={work}
-                    layout='fill'
-                    objectFit='cover'
-                  />
-                </div>
-              ))
+            { isAuthor() && data.status !== 'nftReady' && 
+              <Drop data={data} /> 
             }
+            { (!isAuthor() || data.status == 'nftReady') && (
+              <div>
+                <p className='text-3xl text-center font-bold pt-12 p-6 pb-4 overflow-ellipsis'>Authors Portfolio</p>
+                {
+                  works.map((work, index) => (
+                    <div className='m-4 relative w-11/12 h-60' key={index+'works'}>
+                      <Image
+                        src={work}
+                        layout='fill'
+                        objectFit='cover'
+                      />
+                    </div>
+                  ))
+                }
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -27,21 +27,9 @@ export default function About(props) {
     setShowModal(true)
   }
 
-  const [greetingData, setGreetingData] = useState({
-    data: "",
-    icoPrice: "",
-    cDAIBalance: "",
-  });
-
   useEffect(() => {
     !profile && Router?.push('/')
   }, [])
-
-  const getGreetingData = async () => {
-    const data = await fetchGreeting();
-    console.log(data);
-    setGreetingData(data);
-  };
 
   return (
     <>
@@ -52,7 +40,6 @@ export default function About(props) {
           <main>
             {showModal && <Modal data={modalData} closeModal={() => setShowModal(false)}/>}
             <CardList title={'All Projects'} cardData={listings} showSelectedProject={showSelectedProject} />
-            <Drop /> 
           </main>
         </div>
       </>
