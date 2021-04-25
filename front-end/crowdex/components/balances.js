@@ -5,7 +5,7 @@ const getProposals = async () => {
     .get("https://hub.snapshot.page/api/crowdex.eth/proposals")
     .then(function (response) {
       // handle success
-      console.log(response);
+      console.log(response.data);
     })
     .catch(function (error) {
       // handle error

@@ -3,9 +3,9 @@ import { useState } from "react";
 import Image from "next/image";
 
 import { ethers } from "ethers";
-import Token from "../artifacts/contracts/Token.sol/Token.json";
-import ICO from "../artifacts/contracts/ICO.sol/ICO.json";
-import NFT from "../artifacts/contracts/NFT.sol/NFT.json";
+import Token from "../artifacts/artifacts/contracts/Token.sol/Token.json";
+import ICO from "../artifacts/artifacts/contracts/ICO.sol/ICO.json";
+import NFT from "../artifacts/artifacts/contracts/NFT.sol/NFT.json";
 
 import axios from 'axios'
 
@@ -19,30 +19,30 @@ const works = [
 const getNftUri = async (listing_id, data) => {
   if (typeof window.ethereum == "undefined") return
 
+  const daiAddress = "0x5B7088C7680fCE38916EFFB002A78C051102E121";
   const { price, name, authorName, author_address, duration, total_copies } = data
   const INTERVAL = 120 // 120 seconds TODO change to week in prod
   const TOTAL_SUPPLY = ethers.utils.parseUnits('1000000', 'ether')
   const MIN_PURCHASE = ethers.utils.parseUnits(price + '', "ether");
-  const MAX_PURCHASE = ethers.utils.parseUnits('50000' + '', "ether");
+  const MAX_PURCHASE = ethers.utils.parseUnits('50000', "ether");
 
   const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
   const signer = provider.getSigner();
-  const fake_dai = '0x5e54a8845AdD1e2bb1f8d1798e96BADEF64fC8de'; //TODO Replace this with real payment in mainnet
-  
+  const fakeDAI = new ethers.Contract(daiAddress, Token.abi, signer);
   const token = new ethers.ContractFactory(Token.abi, Token.bytecode, signer);
+  const fake_dai = await fakeDAI.attach(daiAddress);
+
   const nft = new ethers.ContractFactory(NFT.abi, NFT.bytecode, signer);
-  
   const gov_token = await token.deploy(
     "Governance Project X token",
     "govPRX",
-    TOTAL_SUPPLY
+    totalSupply
   );
 
   await gov_token.deployed();
   console.log("Gov token address: ", gov_token.address);
-  console.log(duration, MIN_PURCHASE, MAX_PURCHASE)
-  const ico = new ethers.ContractFactory(ICO.abi, ICO.bytecode, signer);
 
+  const ico = new ethers.ContractFactory(ICO.abi, ICO.bytecode, signer);
   const ico_contract = await ico.deploy(
     gov_token.address, // GOV token address
     duration * INTERVAL, // Duration (seconds)
@@ -56,29 +56,27 @@ const getNftUri = async (listing_id, data) => {
   );
   
   await ico_contract.deployed();
-
-  await gov_token.updateAdmin(ico_contract.address);
-  console.log("ICO contract address: ", ico_contract.address);
-
   const nft_contract = await nft.deploy(
     name + ' by ' + authorName,
     "NP#0",
     total_copies,
+    "QmaxkSWuBCEGYwLgjEgSYmygECYVn86Ef18QEwPg88geEM/prik",
     ico_contract.address
   );
 
-  await ico_contract.start()
+  await gov_token.updateAdmin(ico_contract.address);
+  await ico_contract.start();
+  await nft_contract.deployed();
+
+  console.log("ICO contract address: ", ico_contract.address);
   console.log("NFT token address: ", nft_contract.address);
 
   await axios.post('/api/admin/initiate-listing', { listing_id, gov: gov_token.address, ico: ico_contract.address, nft: nft_contract.address, end: (Math.floor(Date.now() / 1000)) + duration * INTERVAL })
-  // ico_contract.setNftAddress(nftAddress, {
+  // ico_contract.setNftAddress(nft_contract.address, {
   //   gasLimit: "400000",
   // });
-  // const address = signer.getAddress();
+  // const result = await ico_contract.redeemNft({ gasLimit: "400000" });
 
-  // const tokenUri = await ico_contract.redeemNft({ gasLimit: "400000" });
-  // console.log(tokenUri);
-  // console.log(await ico.buy(BUY_AMM), { gasLimit: "4000
 };
 const AdminTools = ({ data }) => {
   const { status, _id } = data;
