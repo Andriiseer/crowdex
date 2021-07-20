@@ -1,15 +1,23 @@
 import { useState, useEffect, useRef } from 'react'
 import Balances from './balances'
 import { requestAccount } from '../utils/crowdex-utils'
+import axios from 'axios'
 
 export default function UserAccount () {
   const [showBalances, setshowBalances] = useState(false)
   const [account, setAccount] = useState('Wallet')
-  const balances = useRef(null);
+  const [balancesData, setBalancesData] = useState({investments: [], grants: []})
+  const balancesModal = useRef(null);
 
   const getAccount = async () => {
     let account = await requestAccount()
-    account?.[0] && setAccount(account?.[0])
+    if (account?.[0]) {
+      setAccount(account?.[0])
+      localStorage.setItem('account', account?.[0])
+      await axios.post('/api/wallet', { wallet: account?.[0]})
+      const balances = await axios.post('/api/get-balances', { wallet: account?.[0]})
+      setBalancesData(balances.data)
+    } 
   }
 
   useEffect(() => {
@@ -17,7 +25,7 @@ export default function UserAccount () {
 
     if (!showBalances) return;
     function handleClick(event) {
-      if (balances.current && !balances.current.contains(event.target)) {
+      if (balancesModal.current && !balancesModal.current.contains(event.target)) {
         setshowBalances(false);
       }
     }
@@ -26,13 +34,16 @@ export default function UserAccount () {
     return () => window.removeEventListener("click", handleClick);
   }, [showBalances])
 
-
+  const handleWalletClick = () => {
+    if (account === 'Wallet') return getAccount()
+    setshowBalances(!showBalances)
+  }
 
   return (
     <div class="ml-3 relative">
       <div>
         <button
-          onClick={() => setshowBalances(!showBalances)}
+          onClick={() => handleWalletClick()}
           type="button"
           class="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
           id="user-menu-button"
@@ -44,8 +55,8 @@ export default function UserAccount () {
         </button>
       </div>
       {showBalances && 
-        <div ref={balances} >
-          <Balances />
+        <div ref={balancesModal} >
+          <Balances data={balancesData}/>
         </div>
       }
     </div>

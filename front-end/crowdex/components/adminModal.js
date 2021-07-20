@@ -3,76 +3,70 @@ import { useState } from "react";
 import Image from "next/image";
 
 import { ethers } from "ethers";
-import Token from "../artifacts/contracts/Token.sol/Token.json";
-import ICO from "../artifacts/contracts/ICO.sol/ICO.json";
-import NFT from "../artifacts/contracts/NFT.sol/NFT.json";
+import Token from "../artifacts/artifacts/contracts/Token.sol/Token.json";
+import ICO from "../artifacts/artifacts/contracts/ICO.sol/ICO.json";
+import NFT from "../artifacts/artifacts/contracts/NFT.sol/NFT.json";
 
-const works = [
-  "/acastro_210329_1777_nft_0002.png",
-  "/acastro_210329_1777_nft_0002.png",
-  "/acastro_210329_1777_nft_0002.png",
-  "/acastro_210329_1777_nft_0002.png",
-];
-const getNftUri = async () => {
-  const icoAddress = "0xb272023ba374815954B1673D53F92057e680AB0C";
-  const nftAddress = "0x17dEbf519c6cAA9cc0cF868D4E66BDdFdEEE66fd";
-  if (typeof window.ethereum !== "undefined") {
-    // const accounts = await window.ethereum.enable();
-    // const account = accounts[0];
-    const ONE_MIL = ethers.utils.parseUnits("1000000", "ether");
-    const ONE_THOU = ethers.utils.parseUnits("1000", "ether");
+import axios from 'axios'
 
-    const MIN_PURCHASE = ethers.utils.parseUnits("20", "ether");
-    const MAX_PURCHASE = ethers.utils.parseUnits("50000", "ether");
-    const PRICE = 20;
-    const totalSupply = ONE_MIL;
-    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-    const signer = provider.getSigner();
-    // const fake_dai = new ethers.Contract(daiAddress, Token.abi, signer);
-    const token = new ethers.ContractFactory(Token.abi, Token.bytecode, signer);
-    const nft = new ethers.ContractFactory(NFT.abi, NFT.bytecode, signer);
-    const gov_token = await token.deploy(
-      "Governance Project X token",
-      "govPRX",
-      totalSupply
-    );
 
-    await gov_token.deployed();
-    const ico = new ethers.ContractFactory(ICO.abi, ICO.bytecode, signer);
-    const ico_contract = await ico.deploy(
-      gov_token.address, // GOV token address
-      120, // Duration (seconds)
-      PRICE, // Price
-      totalSupply, //_availableTokens for the ICO. can be less than maxTotalSupply
-      MIN_PURCHASE, //_minPurchase (in DAI)
-      MAX_PURCHASE, //_maxPurchase (in DAI)
-      "0x5e54a8845AdD1e2bb1f8d1798e96BADEF64fC8de", // Payment token address
-      "0x390f70Bd71263C9bF057585E03839252f42dF59C", // Author address
-      30 // Vesting interval
-    );
-    await ico_contract.deployed();
-    const nft_contract = await nft.deploy(
-      "NFO Project #5",
-      "NP#0",
-      100,
-      ico_contract.address
-    );
-    // await contract.mint(account.address, ONE_THOU);
-    console.log("Gov token address: ", gov_token.address);
-    console.log("ICO contract address: ", ico_contract.address);
-    console.log("NFT token address: ", nft_contract.address);
-    // ico_contract.setNftAddress(nftAddress, {
-    //   gasLimit: "400000",
-    // });
-    // const address = signer.getAddress();
+const getNftUri = async (listing_id, data) => {
+  if (typeof window.ethereum == "undefined") return
 
-    // const tokenUri = await ico_contract.redeemNft({ gasLimit: "400000" });
-    // console.log(tokenUri);
-    // console.log(await ico.buy(BUY_AMM), { gasLimit: "4000
-  }
+  const daiAddress = "0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee";
+  const { price, name, authorName, author_address, duration, total_copies } = data
+  const INTERVAL = 604800 // one week
+  const TOTAL_SUPPLY = ethers.utils.parseUnits('1000000', 'ether')
+  const MIN_PURCHASE = ethers.utils.parseUnits(price + '', "ether");
+  const MAX_PURCHASE = ethers.utils.parseUnits('50000', "ether");
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+  const signer = provider.getSigner();
+  const token = new ethers.ContractFactory(Token.abi, Token.bytecode, signer);
+
+  const nft = new ethers.ContractFactory(NFT.abi, NFT.bytecode, signer);
+  const gov_token = await token.deploy(
+    "Governance Project X token",
+    "govPRX",
+    TOTAL_SUPPLY
+  );
+
+  await gov_token.deployed();
+  console.log("Gov token address: ", gov_token.address);
+
+  const ico = new ethers.ContractFactory(ICO.abi, ICO.bytecode, signer);
+  const ico_contract = await ico.deploy(
+    gov_token.address, // GOV token address
+    duration * INTERVAL, // Duration (seconds)
+    parseFloat(price), // Price
+    TOTAL_SUPPLY, //_availableTokens for the ICO. can be less than maxTotalSupply
+    MIN_PURCHASE, //_minPurchase (in DAI)
+    MAX_PURCHASE, //_maxPurchase (in DAI)
+    daiAddress, // Payment token address
+    author_address, // Author address
+    86400, // Vesting interval 1 day
+  );
+  
+  await ico_contract.deployed();
+  const nft_contract = await nft.deploy(
+    name + ' by ' + authorName,
+    "NP#0",
+    total_copies,
+    "QmaxkSWuBCEGYwLgjEgSYmygECYVn86Ef18QEwPg88geEM/prik",
+    ico_contract.address
+  );
+
+  await gov_token.updateAdmin(ico_contract.address);
+  await ico_contract.start();
+  await nft_contract.deployed();
+
+  console.log("ICO contract address: ", ico_contract.address);
+  console.log("NFT token address: ", nft_contract.address);
+
+  await axios.post('/api/admin/initiate-listing', { listing_id, gov: gov_token.address, ico: ico_contract.address, nft: nft_contract.address, end: (Math.floor(Date.now() / 1000)) + duration * INTERVAL })
 };
 const AdminTools = ({ data }) => {
-  const { status } = data;
+  const { status, _id } = data;
   const [count, setCount] = useState(100);
 
   return (
@@ -85,7 +79,7 @@ const AdminTools = ({ data }) => {
       </div>
       <div
         className="text-xl p-4 tracking-tight font-extrabold rounded-full bg-green-500 m-2 h-12 flex items-center justify-center cursor-pointer text-white"
-        onClick={() => getNftUri()}
+        onClick={() => getNftUri(_id, data)}
       >
         DEPLOY
       </div>
@@ -162,7 +156,7 @@ export default function Modal(props) {
             <p className="text-3xl text-center font-bold pt-12 p-6 pb-4 overflow-ellipsis">
               Authors Portfolio
             </p>
-            {works.map((work, index) => (
+            {data.gallery.map((work, index) => (
               <div className="m-4 relative w-11/12 h-60" key={index + "works"}>
                 <Image src={work} layout="fill" objectFit="cover" />
               </div>

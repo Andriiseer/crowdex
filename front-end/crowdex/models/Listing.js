@@ -9,18 +9,18 @@ const ListingSchema = new mongoose.Schema(
     funded: Number,
     end: String,
     currency: String,
-    eth_address: String, // ETH address
-    duration: Number,// Duration in weeks
-    constacts: String, // Contacts
+    duration: Number, // Duration in weeks
+    description: String,
+    twitter_handle: String, // Contacts
     gallery: Array, // Gallery
+    investors: Array,
     total_copies: Number, // Total copies
-    goal: String, // Goal
-    price: String, // BNB per copy
-    vested: Number,// Vesting progress(%, BNB)
+    price: Number, // BNB per copy
+    author_address: String,
     ico_address: String, // ICO address
     token_address: String, // Token address
+    nft_address: String,
     status: String
-    // Last payment
   }  
 );
 

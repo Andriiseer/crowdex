@@ -10,17 +10,21 @@ async function main() {
   const NFT = await hre.ethers.getContractFactory("NFT");
 
   console.log(NFT);
-  // const nft = NFT.attach("0x0AfD7524D074ebDF613f28770062d10fA1C174C3");
+  // const nft = NFT.attach("0x4D5d3C9D90EbbB16e3D8a354E6ecc930526B8458");
   // 0x0afd7524d074ebdf613f28770062d10fa1c174c3;
   const nft = await NFT.deploy(
     "NFO Project #2",
     "NP#0",
     10000,
-    "0xb272023ba374815954B1673D53F92057e680AB0C"
+    "QmaxkSWuBCEGYwLgjEgSYmygECYVn86Ef18QEwPg88geEM/prik",
+    "0x57e48A82ce80604aaB642bc05CDc6ee7B7945499"
   );
   console.log(nft);
   await nft.deployed();
-
+  // await nft.mintNFT("0xF87800a621d6E500Edc4CD06935F4f0161dd7758", {
+  //   gasLimit: "400000",
+  // });
+  // console.log(await nft.tokenURI("5"));
   // nft.mintNFT("0xF87800a621d6E500Edc4CD06935F4f0161dd7758");
   // console.log(
   //   await nft.approve("0x8Dcb9eaF61eb5e889d792C2d78837E20808a7FD0", ONE_MIL, {
@@ -35,6 +39,8 @@ async function main() {
   //   );
   //   const BUY_AMM = hre.ethers.utils.parseUnits("100", "ether");
   //   console.log(owner_nft.toNumber());
+  // await ico.setNftAddress(nft.address);
+  // await ico.redeemNft({ gasLimit: "400000" });
   console.log("NFT deployed to: ", nft.address);
 }
 main()

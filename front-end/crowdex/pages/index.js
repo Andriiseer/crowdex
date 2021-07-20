@@ -4,22 +4,31 @@ import Header from '../components/header'
 import Banner from '../components/banner'
 import CardList from '../components/cardList'
 import Modal from '../components/modal'
-import dbConnect from '../utils/dbConnect'
-import Listing from '../models/Listing'
+import useSWR from 'swr'
+import axios from 'axios'
 
 export default function Home(props) {
   const [showModal, setShowModal] = useState(false)
   const [modalData, setModalData] = useState({})
-
-  const getGreetingData = async() => {
-    const data = await fetchGreeting()
-    console.log(data)
-    setGreetingData(data)
-  }
-
+  const wallet = typeof window !== 'undefined' ? localStorage.getItem('account') : null
+  const { data, error } = useSWR('/api/get-listings', axios.post('/api/get-listings', { wallet }).then(res => res.data))
+  const invested = []
   const showSelectedProject = (project) => {
     setModalData(project)
     setShowModal(true)
+  }
+
+  const pushInvestments = (source) => {
+    source.forEach(record => {
+      if (record?.investors?.find(el => el === wallet)) {
+        invested.push(record)
+      }
+    })
+  }
+
+  if (data) {
+    pushInvestments(data.current)
+    pushInvestments(data.past)
   }
 
   return (
@@ -27,26 +36,9 @@ export default function Home(props) {
       <Header />
       <Banner />
       {showModal && <Modal data={modalData} closeModal={() => setShowModal(false)}/>}
-      <CardList title={'Trending Projects'} cardData={props.cardData} showSelectedProject={showSelectedProject} />
-      <CardList title={'Past Projects'} cardData={props.cardData} showSelectedProject={showSelectedProject} />
+      { invested.length !== 0 && <CardList title={'Your Investments'} cardData={invested} showSelectedProject={showSelectedProject} /> }
+      { data && <CardList title={'Current Projects'} cardData={data.current} showSelectedProject={showSelectedProject} /> }
+      { data && <CardList title={'Past Projects'} cardData={data.past} showSelectedProject={showSelectedProject} /> }
     </div>
   );
-}
-
-export async function getServerSideProps(context) {
-  await dbConnect()
-
-  const listings = (await Listing.find({ status: 'active' })).map(listing => 
-    {
-      let l = listing.toObject()
-      delete l['_id']
-      return l
-    }
-  )
-  
-  console.log(listings)
-
-  return {
-    props: { cardData: listings }, // will be passed to the page component as props
-  }
 }

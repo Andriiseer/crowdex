@@ -76,10 +76,6 @@ contract ICO is DSMath {
             "_availableTokens should be > 0 and <= maxTotalSupply"
         );
         require(_minPurchase > 0, "_minPurchase should > 0");
-        require(
-            _maxPurchase > 0 && _maxPurchase <= _availableTokens,
-            "_maxPurchase should be > 0 and <= _availableTokens"
-        );
 
         authorAddress = _authorAddress;
         vestingInterval = _vestingInterval;
@@ -247,20 +243,26 @@ contract ICO is DSMath {
         }
     }
 
-    function redeemNft() external icoEnded() nftIsReady() returns (uint256) {
+    function redeemNft()
+        external
+        icoEnded()
+        nftIsReady()
+        returns (string memory)
+    {
         Sale storage sale = sales[msg.sender];
         sale.amount - price;
 
         require(sale.amount >= 0, "only investors");
 
         nft = NFT(nftAddress);
-        return nft.mintNFT(msg.sender);
+        string memory newItemId = nft.mintNFT(msg.sender);
+        return newItemId;
     }
 
     function setNftAddress(address deployedNft)
         external
-        // nftIsNotReady()
-        onlyAdmin()
+        nftIsNotReady()
+        onlyAuthor()
     {
         nftAddress = deployedNft;
     }
